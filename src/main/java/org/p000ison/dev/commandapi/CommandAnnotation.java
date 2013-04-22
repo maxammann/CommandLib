@@ -1,8 +1,12 @@
 package org.p000ison.dev.commandapi;
 
+import java.lang.annotation.*;
+
 /**
  *
  */
+@Retention(value = RetentionPolicy.RUNTIME)
+@Target(value = ElementType.METHOD)
 public @interface CommandAnnotation {
 
     String name();

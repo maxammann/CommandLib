@@ -26,7 +26,7 @@ public final class Argument {
         return position;
     }
 
-    public final boolean isOptional() {
+    public final boolean isRequired() {
         return optional;
     }
 

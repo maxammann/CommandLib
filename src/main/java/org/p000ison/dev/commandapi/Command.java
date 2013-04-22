@@ -57,7 +57,7 @@ public class Command {
         int min = 0;
 
         for (final Argument argument : arguments) {
-            if (!argument.isOptional()) {
+            if (argument.isRequired()) {
                 min++;
             }
         }

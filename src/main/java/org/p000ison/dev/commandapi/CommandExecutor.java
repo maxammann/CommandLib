@@ -135,13 +135,18 @@ public abstract class CommandExecutor {
         Command cmd = buildFromMethod0(method, instance);
 
         if (cmd == null) {
-            throw new IllegalArgumentException("The method does not have a CommandAnnotation!");
+            throw new IllegalArgumentException("The method does not have a CommandAnnotation or does not have the correct parameters!");
         }
 
         return cmd;
     }
 
     private Command buildFromMethod0(Method method, Object instance) {
+
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (parameterTypes.length == 2 && parameterTypes[0] == CommandSender.class && parameterTypes[1] == CallInformation.class) {
+            return null;
+        }
 
         CommandAnnotation annotation = method.getAnnotation(CommandAnnotation.class);
 

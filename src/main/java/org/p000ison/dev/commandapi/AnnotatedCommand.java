@@ -15,14 +15,14 @@ public class AnnotatedCommand extends Command {
     /**
      * Creates a new command based on information given by an annotation
      *
-     * @param name
-     * @param usage
-     * @param identifiers
-     * @param maxArguments
-     * @param minArguments
-     * @param names
-     * @param executeMethod
-     * @param methodInstance
+     * @param name           The name of the command
+     * @param usage          The usage of the command
+     * @param identifiers    The identifiers
+     * @param maxArguments   The  max # of arguments
+     * @param minArguments   The min # of arguments
+     * @param names          The names of the arguments
+     * @param executeMethod  The method which gets executed
+     * @param methodInstance The instance of the method or null
      */
     AnnotatedCommand(final String name, final String usage,
                      final String[] identifiers,

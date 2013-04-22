@@ -37,4 +37,15 @@ public final class Argument {
     public final boolean isInteger() {
         return integer;
     }
+
+    @Override
+    public String toString() {
+        return "Argument{" +
+                "name='" + name + '\'' +
+                ", position=" + position +
+                ", optional=" + optional +
+                ", decimal=" + decimal +
+                ", integer=" + integer +
+                '}';
+    }
 }

@@ -52,7 +52,7 @@ public abstract class CommandExecutor {
         for (Command command : commands) {
             if (command.isIdentifier(identifier)) {
                 if (!sender.hasPermission(command)) {
-//                    ChatBlock.sendMessage(sender, ChatColor.DARK_RED + Language.getTranslation("insufficient.permissions"));
+                    // no permission
                     continue;
                 } else if (arguments < command.getMinArguments() || arguments > command.getMaxArguments()) {
 
@@ -111,19 +111,42 @@ public abstract class CommandExecutor {
     }
 
     public void register(Object instance) {
+        for (Method method : instance.getClass().getMethods()) {
+            Command cmd = buildFromMethod0(method, instance);
 
+            if (cmd != null) {
+                register(cmd);
+            }
+        }
     }
 
     public void register(Class clazz) {
+        for (Method method : clazz.getMethods()) {
+            Command cmd = buildFromMethod0(method, null);
 
+            if (cmd != null) {
+                register(cmd);
+            }
+        }
     }
 
     public Command buildFromMethod(Method method, Object instance) {
 
+        Command cmd = buildFromMethod0(method, instance);
+
+        if (cmd == null) {
+            throw new IllegalArgumentException("The method does not have a CommandAnnotation!");
+        }
+
+        return cmd;
+    }
+
+    private Command buildFromMethod0(Method method, Object instance) {
+
         CommandAnnotation annotation = method.getAnnotation(CommandAnnotation.class);
 
         if (annotation == null) {
-            throw new IllegalArgumentException("The method does not have a CommandAnnotation!");
+            return null;
         }
 
         return createCommand(method, instance, annotation);

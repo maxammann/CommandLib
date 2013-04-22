@@ -1,21 +1,21 @@
 package org.p000ison.dev.commandapi;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents a Command
  */
 public class Command {
 
+    /**
+     * The usage and the name of this command
+     */
     private String usage, name;
 
     /**
      * A list of sub-commands, you can change this during runtime
      */
-    private final List<Command> subCommands = new ArrayList<Command>();
+    private List<Command> subCommands = new ArrayList<Command>();
     /**
      * A array of the identifiers to detect this command, you can NOT change this during runtime
      */
@@ -23,32 +23,32 @@ public class Command {
     /**
      * A List of the arguments for this command, you can NOT change this during runtime
      */
-    private final List<Argument> arguments = new ArrayList<Argument>();
+    private List<Argument> arguments = new ArrayList<Argument>();
     private int maxArguments, minArguments;
 
     /**
      * A List of the callMethods for this command, you can change this during runtime
      * If this command is being executed, those methods get called, too (Aliases)
      */
-    private final List<Command> callMethods = new ArrayList<Command>();
+    private List<Command> callMethods = new ArrayList<Command>();
 
     /**
      * A List of the permission to execute this command, you can change this during runtime
      */
-    private final List<String> permissions = new ArrayList<String>();
+    private List<String> permissions = new ArrayList<String>();
 
     private boolean isSubCommand;
 
 
     /**
-     * Constructs a new command based on given information
+     * Setups this command based on given information
      *
      * @param name        The name of the command
      * @param usage       The usage of the command
      * @param identifiers The identifiers of the command
-     * @param subCommand
+     * @param subCommand  Whether this is a sub-command
      */
-    void build(final String name, final String usage, final String[] identifiers, final boolean subCommand) {
+    void setup(final String name, final String usage, final String[] identifiers, final boolean subCommand) {
         this.identifiers = identifiers;
         this.usage = usage;
         this.name = name;
@@ -67,7 +67,7 @@ public class Command {
     }
 
     Command(final String name, final String usage, final String[] identifiers, final List<Argument> arguments, final boolean subCommand) {
-        build(name, usage, identifiers, subCommand);
+        setup(name, usage, identifiers, subCommand);
         this.arguments.addAll(arguments);
     }
 
@@ -112,8 +112,6 @@ public class Command {
         return arguments;
     }
 
-//    public final boolean hasArguments
-
     public final List<Command> getCallMethods() {
         return callMethods;
     }
@@ -122,36 +120,84 @@ public class Command {
         return permissions;
     }
 
+    public final boolean hasCallMethods() {
+        return !callMethods.isEmpty();
+    }
 
-    /*=============================================================================================================*/
+
+    //================================================================================
+    //  Execute methods
+    //================================================================================
 
 
     public void execute(final CommandSender sender, final CallInformation information) {
         System.out.println("Command executed!\n" + this.toString() + "\n" + information);
     }
 
-
-    /*=============================================================================================================*/
-
-
-    public final void addPermission(String permission) {
-        this.permissions.add(permission);
+    void executeCallMethods(CommandSender sender, CallInformation info) {
+        for (Command command : getCallMethods()) {
+            command.execute(sender, info);
+        }
     }
 
-    public final void addAlias(Command alias) {
-        this.callMethods.add(alias);
+    //================================================================================
+    // Modify methods
+    //================================================================================
+
+    public final void finish() {
+        subCommands = Collections.unmodifiableList(subCommands);
+        arguments = Collections.unmodifiableList(arguments);
+        callMethods = Collections.unmodifiableList(callMethods);
+        permissions = Collections.unmodifiableList(permissions);
     }
 
-    public final void addSubCommand(Command subCommand) {
-        this.subCommands.add(subCommand);
+    public final void setName(String name) {
+        this.name = name;
+    }
+
+    public final void setUsage(String usage) {
+        this.usage = usage;
+    }
+
+    public final void setIdentifiers(String... identifiers) {
+        this.identifiers = identifiers;
     }
 
     public final void addArgument(Argument argument) {
         this.arguments.add(argument);
     }
 
-    public final void addPermissions(Collection<String> permissions) {
+    void addArguments(Collection<Argument> arguments) {
+        this.arguments.addAll(arguments);
+    }
+
+    public final void setSubCommand(boolean subCommand) {
+        isSubCommand = subCommand;
+    }
+
+    public final void addCallMethod(Command command) {
+        this.callMethods.add(command);
+    }
+
+    public final void addSubCommand(Command subCommand) {
+        this.subCommands.add(subCommand);
+    }
+
+    void addSubCommands(Collection<Command> subCommands) {
+        this.subCommands.addAll(subCommands);
+    }
+
+    public final void addPermission(String permission) {
+        this.permissions.add(permission);
+    }
+
+    final void addPermissions(Collection<String> permissions) {
         this.permissions.addAll(permissions);
+    }
+
+
+    public final void addAlias(Command alias) {
+        this.callMethods.add(alias);
     }
 
     public final void addAliases(Collection<Command> aliases) {
@@ -160,28 +206,10 @@ public class Command {
         }
     }
 
-    public final void addCallMethod(Command command) {
-        this.callMethods.add(command);
-    }
+    //================================================================================
+    // Additional methods
+    //================================================================================
 
-    public final boolean hasCallMethods() {
-        return !callMethods.isEmpty();
-    }
-
-    void executeCallMethods(CommandSender sender, CallInformation info) {
-        for (Command command : callMethods) {
-            command.execute(sender, info);
-        }
-    }
-
-    public final void addSubCommands(Collection<Command> subCommands) {
-
-        this.subCommands.addAll(subCommands);
-    }
-
-    public final void addArguments(Collection<Argument> arguments) {
-        this.arguments.addAll(arguments);
-    }
 
     @Override
     public String toString() {
@@ -192,5 +220,21 @@ public class Command {
                 ", minArguments=" + minArguments +
                 ", isSubCommand=" + isSubCommand +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object command) {
+        if (this == command) {
+            return true;
+        }
+        if (command == null || getClass() != command.getClass()) {
+            return false;
+        }
+        return name.equals(((Command) command).name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
 }

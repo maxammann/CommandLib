@@ -10,11 +10,11 @@ public class CommandBuilder {
     private final CommandExecutor executor;
     private String name;
     private String usage;
-    private Set<String> identifiers = new HashSet<String>();
-    private Set<Command> subCommands = new HashSet<Command>();
+    private final Set<String> identifiers = new HashSet<String>();
+    private final Set<Command> subCommands = new HashSet<Command>();
     private Set<Command> aliases = new HashSet<Command>();
     private List<Argument> arguments;
-    private Set<String> permissions = new HashSet<String>();
+    private final Set<String> permissions = new HashSet<String>();
     private boolean subCommand;
 
     CommandBuilder(CommandExecutor executor) {
@@ -70,16 +70,18 @@ public class CommandBuilder {
     }
 
     public Command finish(Command command) {
-        if (name == null || usage == null || identifiers == null || identifiers.size() == 0) {
+        if (name == null || usage == null || identifiers.size() == 0) {
             throw new IllegalArgumentException("You need to set at least a name, a usage and an identifier!");
         }
 
-        command.build(name, usage, identifiers.toArray(new String[identifiers.size()]), subCommand);
+        command.setup(name, usage, identifiers.toArray(new String[identifiers.size()]), subCommand);
 
         command.addAliases(aliases);
         command.addArguments(arguments == null ? new ArrayList<Argument>() : arguments);
         command.addSubCommands(subCommands);
         command.addPermissions(permissions);
+
+        command.finish();
 
         return command;
     }

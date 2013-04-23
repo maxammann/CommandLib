@@ -47,6 +47,14 @@ public class CallInformation {
         return newArray;
     }
 
+    public int getInteger(int index) {
+        try {
+            return Integer.parseInt(getArguments()[index]);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
     void setIdentifier(String identifier) {
         this.identifier = identifier;
     }

@@ -144,7 +144,7 @@ public abstract class CommandExecutor {
     private Command buildFromMethod0(Method method, Object instance) {
 
         Class<?>[] parameterTypes = method.getParameterTypes();
-        if (parameterTypes.length == 2 && parameterTypes[0] == CommandSender.class && parameterTypes[1] == CallInformation.class) {
+        if (parameterTypes.length != 2 || parameterTypes[0] != CommandSender.class || parameterTypes[1] != CallInformation.class) {
             return null;
         }
 

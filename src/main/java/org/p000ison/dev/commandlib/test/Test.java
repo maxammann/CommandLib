@@ -1,6 +1,6 @@
-package org.p000ison.dev.commandapi.test;
+package org.p000ison.dev.commandlib.test;
 
-import org.p000ison.dev.commandapi.*;
+import org.p000ison.dev.commandlib.*;
 
 /**
  * Represents a Test

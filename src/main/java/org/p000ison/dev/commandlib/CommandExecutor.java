@@ -1,4 +1,4 @@
-package org.p000ison.dev.commandapi;
+package org.p000ison.dev.commandlib;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -106,28 +106,40 @@ public abstract class CommandExecutor {
         return new CommandBuilder(this);
     }
 
-    public void register(Command command) {
-        commands.add(command);
+    public CommandBuilder build(String name) {
+        return new CommandBuilder(this).setName(name);
     }
 
-    public void register(Object instance) {
-        for (Method method : instance.getClass().getMethods()) {
-            Command cmd = buildFromMethod0(method, instance);
-
-            if (cmd != null) {
-                register(cmd);
-            }
+    public void register(Command command) {
+        if (!commands.contains(command)) {
+            commands.add(command);
         }
     }
 
-    public void register(Class clazz) {
-        for (Method method : clazz.getMethods()) {
+    public Command register(Object instance) {
+        return register(instance.getClass());
+    }
+
+    public Command register(Class clazz) {
+        return register(clazz.getDeclaredMethods());
+    }
+
+    public Command register(Method... methods) {
+        for (Method method : methods) {
             Command cmd = buildFromMethod0(method, null);
 
             if (cmd != null) {
                 register(cmd);
+
+                return cmd;
             }
         }
+
+        return null;
+    }
+
+    public boolean isRegistered(Command command) {
+        return commands.contains(command);
     }
 
     public Command buildFromMethod(Method method, Object instance) {

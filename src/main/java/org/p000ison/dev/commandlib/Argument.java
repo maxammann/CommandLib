@@ -1,4 +1,4 @@
-package org.p000ison.dev.commandapi;
+package org.p000ison.dev.commandlib;
 
 /**
  * Represents a Argument

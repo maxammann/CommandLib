@@ -1,4 +1,4 @@
-package org.p000ison.dev.commandapi;
+package org.p000ison.dev.commandlib;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

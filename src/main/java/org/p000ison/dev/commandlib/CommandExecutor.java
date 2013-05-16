@@ -1,5 +1,7 @@
 package org.p000ison.dev.commandlib;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,86 +30,56 @@ public abstract class CommandExecutor {
     }
 
     public void executeAll(CommandSender sender, String identifier, String[] arguments) {
-        CallInformation info = new CallInformation(identifier, arguments, sender);
-        executeAll(sender, info);
-    }
-
-    public void executeAll(CommandSender sender, CallInformation info) {
-        Command command = findCommand(info);
-
-        command.execute(sender, info);
-
-        if (command.hasCallMethods()) {
-            command.executeCallMethods(sender, info);
+        if (!executeAll(sender, identifier, arguments, commands)) {
+            onCommandNotFound(sender);
         }
     }
 
-    private Command findCommand(CallInformation info) {
-        String identifier = info.getIdentifier();
-        int arguments = info.getArguments().length;
-        CommandSender sender = info.getSender();
+    private boolean executeAll(CommandSender sender, String identifier, String[] arguments, List<Command> currentCommands) {
+        int argumentsNr = arguments.length;
 
-        Command failCommand = null;
-
-        for (Command command : commands) {
+        for (Command command : currentCommands) {
             if (command.isIdentifier(identifier)) {
+                boolean found = true;
+                if (argumentsNr > 0) {
+                    found = executeAll(sender, arguments[0], CallInformation.removeUntil(arguments, 1), command.getSubCommands());
+                }
+
                 if (!sender.hasPermission(command)) {
                     // no permission
                     continue;
-                } else if (arguments < command.getMinArguments() || arguments > command.getMaxArguments()) {
-
-
-                    boolean failed = true;
-
-                    //Check if the first argument is a sub-command
-                    if (arguments >= 1) {
-                        String subCommandArgument = info.getArguments()[0];
-                        for (Command subCommand : command.getSubCommands()) {
-                            if (subCommand.isIdentifier(subCommandArgument)) {
-                                //remove the sub command from the arguments
-                                info.removeFirstArgument();
-                                info.setIdentifier(subCommandArgument);
-
-                                subCommand.execute(sender, info);
-                                failed = false;
-                            }
-                        }
-                    }
-
-                    if (failed) {
-                        failCommand = command;
+                } else if (argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
+                    if (!found) {
+                        onDisplayCommandHelp(sender, command);
                         continue;
                     }
-                } else if (arguments > 0 && info.getArguments()[0].equals("?")) {
-                    displayCommandHelp(sender, command);
-                    return command;
+                } else if (argumentsNr > 0 && arguments[0].equals("?")) {
+                    onDisplayCommandHelp(sender, command);
+                    continue;
                 }
 
-
-                info.setIdentifier(identifier);
-                return command;
+                command.execute(sender, new CallInformation(identifier, arguments, sender));
+                return true;
             }
         }
 
-        if (failCommand != null) {
-            displayCommandHelp(sender, failCommand);
-        }
-
-        return null;
+        return false;
     }
 
-    public abstract void displayCommandHelp(CommandSender sender, Command command);
+    public abstract void onDisplayCommandHelp(CommandSender sender, Command command);
+
+    public abstract void onCommandNotFound(CommandSender sender);
 
     //================================================================================
     // Command registration
     //================================================================================
 
     public CommandBuilder build() {
-        return new CommandBuilder(this);
+        return new CommandBuilder();
     }
 
     public CommandBuilder build(String name) {
-        return new CommandBuilder(this).setName(name);
+        return new CommandBuilder().setName(name);
     }
 
     public void register(Command command) {
@@ -116,22 +88,43 @@ public abstract class CommandExecutor {
         }
     }
 
+    public static double fuzzyEqualsString(String a, String b) {
+        return 1.0 - (double) StringUtils.getLevenshteinDistance(a, b) / (a.length() >= b.length() ? a.length() : b.length());
+    }
+
     public Command register(Object instance) {
-        return register(instance.getClass());
+        return register(instance, null, instance.getClass().getDeclaredMethods());
     }
 
     public Command register(Class clazz) {
-        return register(clazz.getDeclaredMethods());
+        return register(null, null, clazz.getDeclaredMethods());
     }
 
-    public Command register(Method... methods) {
+    public Command register(Object instance, String name) {
+        return register(instance, name, instance.getClass().getDeclaredMethods());
+    }
+
+    public Command register(Class clazz, String name) {
+        return register(null, name, clazz.getDeclaredMethods());
+    }
+
+
+    private Command register(Object instance, String name, Method... methods) {
         for (Method method : methods) {
-            Command cmd = buildFromMethod0(method, null);
+            CommandAnnotation annotation = getAnnotation(method);
 
-            if (cmd != null) {
-                register(cmd);
+            if (annotation != null) {
+                if (name != null && !annotation.name().equals(name)) {
+                    continue;
+                }
 
-                return cmd;
+                Command cmd = createCommand(method, instance, annotation);
+
+                if (cmd != null) {
+                    register(cmd);
+
+                    return cmd;
+                }
             }
         }
 
@@ -144,7 +137,7 @@ public abstract class CommandExecutor {
 
     public Command buildFromMethod(Method method, Object instance) {
 
-        Command cmd = buildFromMethod0(method, instance);
+        Command cmd = createCommand(method, instance, getAnnotation(method));
 
         if (cmd == null) {
             throw new IllegalArgumentException("The method does not have a CommandAnnotation or does not have the correct parameters!");
@@ -153,27 +146,20 @@ public abstract class CommandExecutor {
         return cmd;
     }
 
-    private Command buildFromMethod0(Method method, Object instance) {
+    private CommandAnnotation getAnnotation(Method method) {
 
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length != 2 || parameterTypes[0] != CommandSender.class || parameterTypes[1] != CallInformation.class) {
             return null;
         }
 
-        CommandAnnotation annotation = method.getAnnotation(CommandAnnotation.class);
-
-        if (annotation == null) {
-            return null;
-        }
-
-        return createCommand(method, instance, annotation);
+        return method.getAnnotation(CommandAnnotation.class);
     }
 
     private Command createCommand(Method method, Object instance, CommandAnnotation annotation) {
         return new AnnotatedCommand(annotation.name(), annotation.usage(),
                 annotation.identifiers(),
                 annotation.minArguments(), annotation.maxArguments(), annotation.arguments(),
-                annotation.subCommand(),
                 method, instance);
     }
 }

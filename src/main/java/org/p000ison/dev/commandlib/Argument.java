@@ -27,7 +27,7 @@ public final class Argument {
     }
 
     public final boolean isRequired() {
-        return optional;
+        return !optional;
     }
 
     public final boolean isDecimal() {

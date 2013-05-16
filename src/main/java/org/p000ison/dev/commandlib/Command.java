@@ -37,8 +37,6 @@ public class Command {
      */
     private List<String> permissions = new ArrayList<String>();
 
-    private boolean isSubCommand;
-
 
     /**
      * Setups this command based on given information
@@ -46,13 +44,11 @@ public class Command {
      * @param name        The name of the command
      * @param usage       The usage of the command
      * @param identifiers The identifiers of the command
-     * @param subCommand  Whether this is a sub-command
      */
-    void setup(final String name, final String usage, final String[] identifiers, final boolean subCommand) {
+    void setup(final String name, final String usage, final String[] identifiers) {
         this.identifiers = identifiers;
         this.usage = usage;
         this.name = name;
-        isSubCommand = subCommand;
 
         int min = 0;
 
@@ -66,9 +62,9 @@ public class Command {
         this.maxArguments = arguments.size();
     }
 
-    Command(final String name, final String usage, final String[] identifiers, final List<Argument> arguments, final boolean subCommand) {
-        setup(name, usage, identifiers, subCommand);
+    Command(final String name, final String usage, final String[] identifiers, final List<Argument> arguments) {
         this.arguments.addAll(arguments);
+        setup(name, usage, identifiers);
     }
 
     public Command() {
@@ -144,7 +140,7 @@ public class Command {
     // Modify methods
     //================================================================================
 
-    public final void finish() {
+    final void finish() {
         subCommands = Collections.unmodifiableList(subCommands);
         arguments = Collections.unmodifiableList(arguments);
         callMethods = Collections.unmodifiableList(callMethods);
@@ -169,10 +165,6 @@ public class Command {
 
     void addArguments(Collection<Argument> arguments) {
         this.arguments.addAll(arguments);
-    }
-
-    public final void setSubCommand(boolean subCommand) {
-        isSubCommand = subCommand;
     }
 
     public final void addCallMethod(Command command) {
@@ -218,19 +210,15 @@ public class Command {
                 ", identifiers=" + Arrays.toString(identifiers) +
                 ", maxArguments=" + maxArguments +
                 ", minArguments=" + minArguments +
-                ", isSubCommand=" + isSubCommand +
                 '}';
     }
 
     @Override
     public boolean equals(Object command) {
-        if (this == command) {
-            return true;
-        }
-        if (command == null || getClass() != command.getClass()) {
-            return false;
-        }
-        return name.equals(((Command) command).name);
+        if (this == command) return true;
+        if (!(command == null || getClass() != command.getClass()))
+            if (name.equals(((Command) command).name)) return true;
+        return false;
     }
 
     @Override

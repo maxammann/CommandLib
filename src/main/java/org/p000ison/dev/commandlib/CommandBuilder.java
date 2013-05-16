@@ -7,7 +7,6 @@ import java.util.*;
  */
 public class CommandBuilder {
 
-    private final CommandExecutor executor;
     private String name;
     private String usage;
     private final Set<String> identifiers = new HashSet<String>();
@@ -15,10 +14,8 @@ public class CommandBuilder {
     private Set<Command> aliases = new HashSet<Command>();
     private List<Argument> arguments;
     private final Set<String> permissions = new HashSet<String>();
-    private boolean subCommand;
 
-    CommandBuilder(CommandExecutor executor) {
-        this.executor = executor;
+    CommandBuilder() {
     }
 
     public CommandBuilder setName(String name) {
@@ -65,16 +62,12 @@ public class CommandBuilder {
         return this;
     }
 
-    public void setSubCommand(boolean subCommand) {
-        this.subCommand = subCommand;
-    }
-
     public Command finish(Command command) {
         if (name == null || usage == null || identifiers.size() == 0) {
             throw new IllegalArgumentException("You need to set at least a name, a usage and an identifier!");
         }
 
-        command.setup(name, usage, identifiers.toArray(new String[identifiers.size()]), subCommand);
+        command.setup(name, usage, identifiers.toArray(new String[identifiers.size()]));
 
         command.addAliases(aliases);
         command.addArguments(arguments == null ? new ArrayList<Argument>() : arguments);

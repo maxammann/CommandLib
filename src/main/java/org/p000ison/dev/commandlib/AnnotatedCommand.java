@@ -27,10 +27,9 @@ public class AnnotatedCommand extends Command {
     AnnotatedCommand(final String name, final String usage,
                      final String[] identifiers,
                      final int maxArguments, final int minArguments, final String[] names,
-                     final boolean subCommand,
                      final Method executeMethod, final Object methodInstance) {
 
-        super(name, usage, identifiers, createArguments(maxArguments, minArguments, names), subCommand);
+        super(name, usage, identifiers, createArguments(maxArguments, minArguments, names));
         this.executeMethod = executeMethod;
         this.methodInstance = methodInstance;
     }

@@ -21,10 +21,9 @@ public class Command {
      */
     private String[] identifiers;
     /**
-     * A List of the arguments for this command, you can NOT change this during runtime
+     * A List of the arguments for this command, you can change this during runtime
      */
     private List<Argument> arguments = new ArrayList<Argument>();
-    private int maxArguments, minArguments;
 
     /**
      * A List of the callMethods for this command, you can change this during runtime
@@ -49,17 +48,6 @@ public class Command {
         this.identifiers = identifiers;
         this.usage = usage;
         this.name = name;
-
-        int min = 0;
-
-        for (final Argument argument : arguments) {
-            if (argument.isRequired()) {
-                min++;
-            }
-        }
-
-        this.minArguments = min;
-        this.maxArguments = arguments.size();
     }
 
     Command(final String name, final String usage, final String[] identifiers, final List<Argument> arguments) {
@@ -82,6 +70,10 @@ public class Command {
         return identifiers;
     }
 
+    public final void setIdentifiers(String... identifiers) {
+        this.identifiers = identifiers;
+    }
+
     public final boolean isIdentifier(String identifier) {
         for (final String string : identifiers) {
             if (identifier.equals(string)) {
@@ -97,11 +89,19 @@ public class Command {
     }
 
     public final int getMaxArguments() {
-        return maxArguments;
+        return arguments.size();
     }
 
     public final int getMinArguments() {
-        return minArguments;
+        int min = 0;
+
+        for (final Argument argument : arguments) {
+            if (argument.isRequired()) {
+                min++;
+            }
+        }
+
+        return min;
     }
 
     public final List<Argument> getArguments() {
@@ -118,6 +118,11 @@ public class Command {
 
     public final boolean hasCallMethods() {
         return !callMethods.isEmpty();
+    }
+
+    public Command addArguments(Argument argument) {
+        this.arguments.add(argument);
+        return this;
     }
 
 
@@ -142,7 +147,6 @@ public class Command {
 
     final void finish() {
         subCommands = Collections.unmodifiableList(subCommands);
-        arguments = Collections.unmodifiableList(arguments);
         callMethods = Collections.unmodifiableList(callMethods);
         permissions = Collections.unmodifiableList(permissions);
     }
@@ -153,10 +157,6 @@ public class Command {
 
     public final void setUsage(String usage) {
         this.usage = usage;
-    }
-
-    public final void setIdentifiers(String... identifiers) {
-        this.identifiers = identifiers;
     }
 
     public final void addArgument(Argument argument) {
@@ -208,8 +208,8 @@ public class Command {
         return "Command{" +
                 "name='" + name + '\'' +
                 ", identifiers=" + Arrays.toString(identifiers) +
-                ", maxArguments=" + maxArguments +
-                ", minArguments=" + minArguments +
+                ", maxArguments=" + getMaxArguments() +
+                ", minArguments=" + getMinArguments() +
                 '}';
     }
 

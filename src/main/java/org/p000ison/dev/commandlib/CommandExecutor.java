@@ -45,16 +45,18 @@ public abstract class CommandExecutor {
                     found = executeAll(sender, arguments[0], CallInformation.removeUntil(arguments, 1), command.getSubCommands());
                 }
 
-                if (!sender.hasPermission(command)) {
-                    // no permission
-                    continue;
-                } else if (argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
+                if (argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
                     if (!found) {
                         onDisplayCommandHelp(sender, command);
                         continue;
                     }
                 } else if (argumentsNr > 0 && arguments[0].equals("?")) {
                     onDisplayCommandHelp(sender, command);
+                    continue;
+                }
+
+                if (!sender.hasPermission(command)) {
+                    onPermissionFailed(sender, command);
                     continue;
                 }
 
@@ -69,6 +71,8 @@ public abstract class CommandExecutor {
     public abstract void onDisplayCommandHelp(CommandSender sender, Command command);
 
     public abstract void onCommandNotFound(CommandSender sender);
+
+    public abstract void onPermissionFailed(CommandSender sender, Command command);
 
     //================================================================================
     // Command registration

@@ -42,6 +42,10 @@ public class CommandTest {
             public void onCommandNotFound(CommandSender sender) {
                 sender.sendMessage(COMMAND_NOT_FOUND);
             }
+
+            @Override
+            public void onPermissionFailed(CommandSender sender, Command command) {
+            }
         };
 
         Command subCommand = executor.register(this, "SubTest");

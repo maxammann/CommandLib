@@ -50,6 +50,15 @@ public class Command {
         this.name = name;
     }
 
+    public Command(final String name, final String usage) {
+        this.name = name;
+        this.usage = usage;
+    }
+
+    public Command(final String name) {
+        this(name, null);
+    }
+
     Command(final String name, final String usage, final String[] identifiers, final List<Argument> arguments) {
         this.arguments.addAll(arguments);
         setup(name, usage, identifiers);

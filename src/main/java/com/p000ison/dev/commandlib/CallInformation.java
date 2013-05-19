@@ -1,4 +1,4 @@
-package org.p000ison.dev.commandlib;
+package com.p000ison.dev.commandlib;
 
 import java.util.Arrays;
 
@@ -7,13 +7,15 @@ import java.util.Arrays;
  */
 public class CallInformation {
 
-    private String identifier;
-    private String[] arguments;
+    private final String identifier;
+    private final String[] arguments;
+    private final Command command;
     private final CommandSender sender;
 
-    public CallInformation(String identifier, String[] arguments, CommandSender sender) {
+    public CallInformation(String identifier, String[] arguments, Command command, CommandSender sender) {
         this.identifier = identifier;
         this.arguments = arguments;
+        this.command = command;
         this.sender = sender;
     }
 
@@ -33,30 +35,29 @@ public class CallInformation {
         getSender().sendMessage(message);
     }
 
-    void removeFirstArgument() {
-        if (arguments.length > 0) {
-            arguments = removeUntil(arguments, 1);
-        }
-    }
+    public int getPage() {
+        for (final Argument argument : command.getArguments()) {
+            if (argument.isPage()) {
+                int integer = getInteger(argument.getPosition());
 
-    public static String[] removeUntil(String[] original, int until) {
-        String[] newArray = new String[original.length - until];
-        System.arraycopy(original, until,       // from array[removeEnd]
-                newArray, 0,                    // to array[removeStart]
-                newArray.length);       // this number of elements
-        return newArray;
+                if (integer != -1) {
+                    return integer;
+                }
+
+                break;
+            }
+        }
+        return 0;
     }
 
     public int getInteger(int index) {
         try {
-            return Integer.parseInt(getArguments()[index]);
+            return CommandExecutor.parseInt(getArguments()[index]);
         } catch (NumberFormatException e) {
             return -1;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return -1;
         }
-    }
-
-    void setIdentifier(String identifier) {
-        this.identifier = identifier;
     }
 
     @Override

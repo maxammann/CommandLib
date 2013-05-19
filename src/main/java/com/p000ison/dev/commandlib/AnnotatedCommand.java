@@ -1,8 +1,7 @@
-package org.p000ison.dev.commandlib;
+package com.p000ison.dev.commandlib;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,30 +17,19 @@ public class AnnotatedCommand extends Command {
      * @param name           The name of the command
      * @param usage          The usage of the command
      * @param identifiers    The identifiers
-     * @param maxArguments   The  max # of arguments
-     * @param minArguments   The min # of arguments
-     * @param names          The names of the arguments
+     * @param arguments      The arguments
      * @param executeMethod  The method which gets executed
      * @param methodInstance The instance of the method or null
      */
     AnnotatedCommand(final String name, final String usage,
                      final String[] identifiers,
-                     final int maxArguments, final int minArguments, final String[] names,
+                     final List<Argument> arguments,
                      final Method executeMethod, final Object methodInstance) {
 
-        super(name, usage, identifiers, createArguments(maxArguments, minArguments, names));
+        super(name, usage);
+        super.setIdentifiers(identifiers).addArguments(arguments);
         this.executeMethod = executeMethod;
         this.methodInstance = methodInstance;
-    }
-
-    static List<Argument> createArguments(final int maxArguments, final int minArguments, final String[] names) {
-        final List<Argument> arguments = new ArrayList<Argument>();
-
-        for (int i = 0; i < maxArguments; i++) {
-            arguments.add(new Argument(names[i], i, i >= minArguments, false, false));
-        }
-
-        return arguments;
     }
 
 
@@ -51,9 +39,9 @@ public class AnnotatedCommand extends Command {
             try {
                 executeMethod.invoke(methodInstance, sender, information);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                throw new CommandException(this, e, "No access to the method: %s", executeMethod.getName());
             } catch (InvocationTargetException e) {
-                e.printStackTrace();
+                throw new CommandException(this, e, "Exception in method: %s", executeMethod.getName());
             }
         }
     }

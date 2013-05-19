@@ -1,6 +1,9 @@
-package org.p000ison.dev.commandlib;
+package com.p000ison.dev.commandlib;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Represents a Command
@@ -36,6 +39,16 @@ public class Command {
      */
     private List<String> permissions = new ArrayList<String>();
 
+    private boolean needAllPermissions;
+
+    protected Command(final String name, final String usage) {
+        this.name = name;
+        this.usage = usage;
+    }
+
+    protected Command(final String name) {
+        this(name, null);
+    }
 
     /**
      * Setups this command based on given information
@@ -44,28 +57,18 @@ public class Command {
      * @param usage       The usage of the command
      * @param identifiers The identifiers of the command
      */
-    void setup(final String name, final String usage, final String[] identifiers) {
+    private void setup(final String name, final String usage, final String[] identifiers) {
         this.identifiers = identifiers;
         this.usage = usage;
         this.name = name;
     }
 
-    public Command(final String name, final String usage) {
-        this.name = name;
-        this.usage = usage;
-    }
-
-    public Command(final String name) {
-        this(name, null);
-    }
-
-    Command(final String name, final String usage, final String[] identifiers, final List<Argument> arguments) {
-        this.arguments.addAll(arguments);
-        setup(name, usage, identifiers);
-    }
-
     public Command() {
     }
+
+    //================================================================================
+    //  Public getter methods
+    //================================================================================
 
     public final String getName() {
         return name;
@@ -77,10 +80,6 @@ public class Command {
 
     public final String[] getIdentifiers() {
         return identifiers;
-    }
-
-    public final void setIdentifiers(String... identifiers) {
-        this.identifiers = identifiers;
     }
 
     public final boolean isIdentifier(String identifier) {
@@ -129,19 +128,82 @@ public class Command {
         return !callMethods.isEmpty();
     }
 
-    public Command addArguments(Argument argument) {
+    public final boolean hasPermission(CommandSender sender) {
+        if (permissions.isEmpty()) {
+            return true;
+        }
+
+        for (String perm : permissions) {
+            if (sender.hasPermission(perm)) {
+                if (!needAllPermissions) {
+                    return true;
+                }
+            } else {
+                if (needAllPermissions) {
+                    return false;
+                }
+            }
+        }
+
+
+        return !needAllPermissions;
+    }
+
+
+    //================================================================================
+    //  Public modify methods
+    //================================================================================
+
+    public final Command addArgument(Argument argument) {
         this.arguments.add(argument);
         return this;
     }
 
+    public final Command createArguments(int minArguments, int maxArguments, String[] names) {
+        this.arguments = CommandExecutor.createArguments(maxArguments, minArguments, names);
+        return this;
+    }
+
+    public final Command addPermission(String permission) {
+        this.permissions.add(permission);
+        return this;
+    }
+
+    public final Command setIdentifiers(String... identifiers) {
+        this.identifiers = identifiers;
+        return this;
+    }
+
+    public final Command addAlias(Command alias) {
+        this.callMethods.add(alias);
+        return this;
+    }
+
+    public final Command setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public final Command setUsage(String usage) {
+        this.usage = usage;
+        return this;
+    }
+
+    public final Command setNeedAllPermissions(boolean needAllPermissions) {
+        this.needAllPermissions = needAllPermissions;
+        return this;
+    }
+
+    public final Command addSubCommand(Command subCommand) {
+        this.subCommands.add(subCommand);
+        return this;
+    }
 
     //================================================================================
     //  Execute methods
     //================================================================================
 
-
     public void execute(final CommandSender sender, final CallInformation information) {
-        System.out.println("Command executed!\n" + this.toString() + "\n" + information);
     }
 
     void executeCallMethods(CommandSender sender, CallInformation info) {
@@ -151,57 +213,36 @@ public class Command {
     }
 
     //================================================================================
-    // Modify methods
+    // Internal modify methods
     //================================================================================
 
-    final void finish() {
-        subCommands = Collections.unmodifiableList(subCommands);
-        callMethods = Collections.unmodifiableList(callMethods);
-        permissions = Collections.unmodifiableList(permissions);
-    }
-
-    public final void setName(String name) {
-        this.name = name;
-    }
-
-    public final void setUsage(String usage) {
-        this.usage = usage;
-    }
-
-    public final void addArgument(Argument argument) {
-        this.arguments.add(argument);
+    void check() {
+        if (name == null) {
+            throw new CommandException(this, "The command %s has no name!", this.getName());
+        } else if (usage == null) {
+            throw new CommandException(this, "The command %s has no usage!", this.getName());
+        } else if (identifiers == null || identifiers.length == 0) {
+            throw new CommandException(this, "The command %s has no identifiers!", this.getName());
+        }
     }
 
     void addArguments(Collection<Argument> arguments) {
         this.arguments.addAll(arguments);
     }
 
-    public final void addCallMethod(Command command) {
+    void addCallMethod(Command command) {
         this.callMethods.add(command);
-    }
-
-    public final void addSubCommand(Command subCommand) {
-        this.subCommands.add(subCommand);
     }
 
     void addSubCommands(Collection<Command> subCommands) {
         this.subCommands.addAll(subCommands);
     }
 
-    public final void addPermission(String permission) {
-        this.permissions.add(permission);
-    }
-
-    final void addPermissions(Collection<String> permissions) {
+    void addPermissions(Collection<String> permissions) {
         this.permissions.addAll(permissions);
     }
 
-
-    public final void addAlias(Command alias) {
-        this.callMethods.add(alias);
-    }
-
-    public final void addAliases(Collection<Command> aliases) {
+    void addAliases(Collection<Command> aliases) {
         for (Command command : aliases) {
             command.addCallMethod(this);
         }

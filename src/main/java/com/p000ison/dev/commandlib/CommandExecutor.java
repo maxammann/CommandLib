@@ -1,4 +1,4 @@
-package org.p000ison.dev.commandlib;
+package com.p000ison.dev.commandlib;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -23,7 +23,7 @@ public abstract class CommandExecutor {
         String identifier = arguments[0];
 
         if (arguments.length >= 1) {
-            arguments = CallInformation.removeUntil(arguments, 1);
+            arguments = removeUntil(arguments, 1);
         }
 
         executeAll(sender, identifier, arguments);
@@ -42,7 +42,7 @@ public abstract class CommandExecutor {
             if (command.isIdentifier(identifier)) {
                 boolean found = true;
                 if (argumentsNr > 0) {
-                    found = executeAll(sender, arguments[0], CallInformation.removeUntil(arguments, 1), command.getSubCommands());
+                    found = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
                 }
 
                 if (argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
@@ -55,12 +55,12 @@ public abstract class CommandExecutor {
                     continue;
                 }
 
-                if (!sender.hasPermission(command)) {
+                if (!command.hasPermission(sender)) {
                     onPermissionFailed(sender, command);
                     continue;
                 }
 
-                command.execute(sender, new CallInformation(identifier, arguments, sender));
+                command.execute(sender, new CallInformation(identifier, arguments, command, sender));
                 return true;
             }
         }
@@ -68,32 +68,44 @@ public abstract class CommandExecutor {
         return false;
     }
 
+
     public abstract void onDisplayCommandHelp(CommandSender sender, Command command);
 
     public abstract void onCommandNotFound(CommandSender sender);
 
     public abstract void onPermissionFailed(CommandSender sender, Command command);
 
+
     //================================================================================
     // Command registration
     //================================================================================
 
-    public CommandBuilder build() {
-        return new CommandBuilder();
+    public Command build() {
+        return new Command();
     }
 
-    public CommandBuilder build(String name) {
-        return new CommandBuilder().setName(name);
+    public Command build(String name) {
+        return new Command().setName(name);
     }
 
-    public void register(Command command) {
+    public final Command build(Method method, Object instance) {
+
+        Command cmd = createCommand(method, instance, getAnnotation(method));
+
+        if (cmd == null) {
+            throw new IllegalArgumentException("The method does not have a CommandHandler or does not have the correct parameters!");
+        }
+
+        return cmd;
+    }
+
+    public Command register(Command command) {
         if (!commands.contains(command)) {
+            command.check();
             commands.add(command);
         }
-    }
 
-    public static double fuzzyEqualsString(String a, String b) {
-        return 1.0 - (double) StringUtils.getLevenshteinDistance(a, b) / (a.length() >= b.length() ? a.length() : b.length());
+        return command;
     }
 
     public Command register(Object instance) {
@@ -112,10 +124,9 @@ public abstract class CommandExecutor {
         return register(null, name, clazz.getDeclaredMethods());
     }
 
-
     private Command register(Object instance, String name, Method... methods) {
         for (Method method : methods) {
-            CommandAnnotation annotation = getAnnotation(method);
+            CommandHandler annotation = getAnnotation(method);
 
             if (annotation != null) {
                 if (name != null && !annotation.name().equals(name)) {
@@ -135,35 +146,75 @@ public abstract class CommandExecutor {
         return null;
     }
 
-    public boolean isRegistered(Command command) {
+    public final boolean isRegistered(Command command) {
         return commands.contains(command);
     }
 
-    public Command buildFromMethod(Method method, Object instance) {
-
-        Command cmd = createCommand(method, instance, getAnnotation(method));
-
-        if (cmd == null) {
-            throw new IllegalArgumentException("The method does not have a CommandAnnotation or does not have the correct parameters!");
-        }
-
-        return cmd;
+    public final List<Command> getCommands() {
+        return commands;
     }
 
-    private CommandAnnotation getAnnotation(Method method) {
+    //================================================================================
+    // Internal helper methods
+    //================================================================================
+
+    private CommandHandler getAnnotation(Method method) {
 
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length != 2 || parameterTypes[0] != CommandSender.class || parameterTypes[1] != CallInformation.class) {
             return null;
         }
 
-        return method.getAnnotation(CommandAnnotation.class);
+        return method.getAnnotation(CommandHandler.class);
     }
 
-    private Command createCommand(Method method, Object instance, CommandAnnotation annotation) {
+    private Command createCommand(Method method, Object instance, CommandHandler annotation) {
         return new AnnotatedCommand(annotation.name(), annotation.usage(),
                 annotation.identifiers(),
-                annotation.minArguments(), annotation.maxArguments(), annotation.arguments(),
+                createArguments(annotation.maxArguments(), annotation.minArguments(), annotation.arguments()),
                 method, instance);
+    }
+
+    static List<Argument> createArguments(final int maxArguments, final int minArguments, final String[] names) {
+        final List<Argument> arguments = new ArrayList<Argument>();
+
+        for (int i = 0; i < maxArguments; i++) {
+            arguments.add(new Argument((i < names.length ? names[i] : "param" + i), i, i >= minArguments, false, false, false));
+        }
+
+        return arguments;
+    }
+
+    public static int parseInt(final String s) {
+        // Check for a sign.
+        int num = 0;
+        int sign = -1;
+        final int len = s.length();
+        final char ch = s.charAt(0);
+        if (ch == '-') {
+            sign = 1;
+        } else {
+            num = '0' - ch;
+        }
+
+        // Build the number.
+        int i = 1;
+        while (i < len)
+            num = num * 10 + '0' - s.charAt(i++);
+
+        return sign * num;
+    }
+
+    public static String[] removeUntil(String[] original, int until) {
+        String[] newArray = new String[original.length - until];
+        System.arraycopy(original, until,       // from array[removeEnd]
+                newArray, 0,                    // to array[removeStart]
+                newArray.length);       // this number of elements
+        return newArray;
+    }
+
+
+    public static double fuzzyEqualsString(String a, String b) {
+        return 1.0 - (double) StringUtils.getLevenshteinDistance(a, b) / (a.length() >= b.length() ? a.length() : b.length());
     }
 }

@@ -63,13 +63,6 @@ public class CommandTest {
     }
 
     @Test
-    public void testHelpCommand() {
-        executor.executeAll(consoleSender, "help 2");
-        assertEquals(TEST_TEXT, outContent.toString().trim());
-    }
-
-
-    @Test
     public void testSubCommand() {
         executor.executeAll(consoleSender, "test sub");
         assertEquals(TEST_TEXT_SUB + '\n' + TEST_TEXT, outContent.toString().trim());

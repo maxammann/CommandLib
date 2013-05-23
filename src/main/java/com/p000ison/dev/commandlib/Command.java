@@ -18,6 +18,7 @@ public class Command {
     /**
      * A list of sub-commands, you can change this during runtime
      */
+
     private List<Command> subCommands = new ArrayList<Command>();
     /**
      * A array of the identifiers to detect this command, you can NOT change this during runtime
@@ -26,17 +27,20 @@ public class Command {
     /**
      * A List of the arguments for this command, you can change this during runtime
      */
+
     private List<Argument> arguments = new ArrayList<Argument>();
 
     /**
      * A List of the callMethods for this command, you can change this during runtime
      * If this command is being executed, those methods get called, too (Aliases)
      */
+
     private List<Command> callMethods = new ArrayList<Command>();
 
     /**
      * A List of the permission to execute this command, you can change this during runtime
      */
+
     private List<String> permissions = new ArrayList<String>();
 
     private boolean needAllPermissions;
@@ -92,6 +96,7 @@ public class Command {
         return false;
     }
 
+
     public final List<Command> getSubCommands() {
         return subCommands;
     }
@@ -112,13 +117,16 @@ public class Command {
         return min;
     }
 
+
     public final List<Argument> getArguments() {
         return arguments;
     }
 
+
     public final List<Command> getCallMethods() {
         return callMethods;
     }
+
 
     public final List<String> getPermissions() {
         return permissions;
@@ -154,45 +162,54 @@ public class Command {
     //  Public modify methods
     //================================================================================
 
+
     public final Command addArgument(Argument argument) {
         this.arguments.add(argument);
         return this;
     }
+
 
     public final Command createArguments(int minArguments, int maxArguments, String[] names) {
         this.arguments = CommandExecutor.createArguments(maxArguments, minArguments, names);
         return this;
     }
 
+
     public final Command addPermission(String permission) {
         this.permissions.add(permission);
         return this;
     }
+
 
     public final Command setIdentifiers(String... identifiers) {
         this.identifiers = identifiers;
         return this;
     }
 
+
     public final Command addAlias(Command alias) {
         this.callMethods.add(alias);
         return this;
     }
+
 
     public final Command setName(String name) {
         this.name = name;
         return this;
     }
 
+
     public final Command setUsage(String usage) {
         this.usage = usage;
         return this;
     }
 
+
     public final Command setNeedAllPermissions(boolean needAllPermissions) {
         this.needAllPermissions = needAllPermissions;
         return this;
     }
+
 
     public final Command addSubCommand(Command subCommand) {
         this.subCommands.add(subCommand);

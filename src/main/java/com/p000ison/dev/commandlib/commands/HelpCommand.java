@@ -11,13 +11,11 @@ public class HelpCommand extends Command {
 
     private final CommandExecutor executor;
     private final String format;
-    private final int maxCommandsPerPage;
 
-    public HelpCommand(CommandExecutor executor, String name, String usage, String identifier, String format, int maxCommands) {
+    public HelpCommand(CommandExecutor executor, String name, String usage, String identifier, String format) {
         super(name, usage);
         this.executor = executor;
         this.format = format;
-        this.maxCommandsPerPage = maxCommands;
 
         addArgument(new Argument("page", 0, true, false, true, true));
         setIdentifiers(identifier, "help");
@@ -25,24 +23,14 @@ public class HelpCommand extends Command {
 
     @Override
     public void execute(CommandSender sender, CallInformation information) {
-        final int page = information.getPage();
-
-        int start = page * maxCommandsPerPage;
-        int end = (page + 1) * maxCommandsPerPage;
+        int size = executor.getCommands().size();
+        final int page = information.getPage(size);
+        final int start = information.getStartIndex(page, size);
+        final int end = information.getEndIndex(page, size);
 
         final List<Command> commands = executor.getCommands();
-        final int length = commands.size();
 
-        //check if start and end are in bounds
-        if (start > length - maxCommandsPerPage) {
-            start = length - maxCommandsPerPage - 1;
-        }
-
-        if (end > length) {
-            end = length - 1;
-        }
-
-        for (int i = start; i <= end; i++) {
+        for (int i = start; i < end; i++) {
             Command command = commands.get(i);
             sender.sendMessage(createLine(command));
         }

@@ -46,6 +46,7 @@ public final class Argument {
         return page;
     }
 
+
     @Override
     public String toString() {
         return "Argument{" +

@@ -13,6 +13,9 @@ public abstract class CommandExecutor {
 
     private final List<Command> commands = new ArrayList<Command>(1);
 
+    private int defaultElementsPerPage = 10;
+    private final List<CommandListener> commandListeners = new ArrayList<CommandListener>();
+
     public void executeAll(CommandSender sender, String command) {
 
         String[] arguments = command.split(" ");
@@ -60,7 +63,7 @@ public abstract class CommandExecutor {
                     continue;
                 }
 
-                command.execute(sender, new CallInformation(identifier, arguments, command, sender));
+                command.execute(sender, new CallInformation(this, command, sender, identifier, arguments));
                 return true;
             }
         }
@@ -80,24 +83,26 @@ public abstract class CommandExecutor {
     // Command registration
     //================================================================================
 
+
     public Command build() {
         return new Command();
     }
+
 
     public Command build(String name) {
         return new Command().setName(name);
     }
 
+
     public final Command build(Method method, Object instance) {
-
-        Command cmd = createCommand(method, instance, getAnnotation(method));
-
-        if (cmd == null) {
+        CommandHandler annotation = getAnnotation(method);
+        if (annotation == null) {
             throw new IllegalArgumentException("The method does not have a CommandHandler or does not have the correct parameters!");
         }
 
-        return cmd;
+        return createCommand(method, instance, annotation);
     }
+
 
     public Command register(Command command) {
         if (!commands.contains(command)) {
@@ -108,21 +113,26 @@ public abstract class CommandExecutor {
         return command;
     }
 
+
     public Command register(Object instance) {
         return register(instance, null, instance.getClass().getDeclaredMethods());
     }
+
 
     public Command register(Class clazz) {
         return register(null, null, clazz.getDeclaredMethods());
     }
 
+
     public Command register(Object instance, String name) {
         return register(instance, name, instance.getClass().getDeclaredMethods());
     }
 
+
     public Command register(Class clazz, String name) {
         return register(null, name, clazz.getDeclaredMethods());
     }
+
 
     private Command register(Object instance, String name, Method... methods) {
         for (Method method : methods) {
@@ -150,6 +160,7 @@ public abstract class CommandExecutor {
         return commands.contains(command);
     }
 
+
     public final List<Command> getCommands() {
         return commands;
     }
@@ -157,6 +168,7 @@ public abstract class CommandExecutor {
     //================================================================================
     // Internal helper methods
     //================================================================================
+
 
     private CommandHandler getAnnotation(Method method) {
 
@@ -168,12 +180,14 @@ public abstract class CommandExecutor {
         return method.getAnnotation(CommandHandler.class);
     }
 
+
     private Command createCommand(Method method, Object instance, CommandHandler annotation) {
         return new AnnotatedCommand(annotation.name(), annotation.usage(),
                 annotation.identifiers(),
                 createArguments(annotation.maxArguments(), annotation.minArguments(), annotation.arguments()),
                 method, instance);
     }
+
 
     static List<Argument> createArguments(final int maxArguments, final int minArguments, final String[] names) {
         final List<Argument> arguments = new ArrayList<Argument>();
@@ -186,24 +200,45 @@ public abstract class CommandExecutor {
     }
 
     public static int parseInt(final String s) {
+        if (s == null)
+            throw new NumberFormatException("Null string");
+
         // Check for a sign.
         int num = 0;
         int sign = -1;
         final int len = s.length();
         final char ch = s.charAt(0);
         if (ch == '-') {
+            if (len == 1)
+                throw new NumberFormatException("Missing digits:  " + s);
             sign = 1;
         } else {
-            num = '0' - ch;
+            final int d = ch - '0';
+            if (d < 0 || d > 9)
+                throw new NumberFormatException("Malformed:  " + s);
+            num = -d;
         }
 
         // Build the number.
+        final int max = (sign == -1) ?
+                -Integer.MAX_VALUE : Integer.MIN_VALUE;
+        final int multmax = max / 10;
         int i = 1;
-        while (i < len)
-            num = num * 10 + '0' - s.charAt(i++);
+        while (i < len) {
+            int d = s.charAt(i++) - '0';
+            if (d < 0 || d > 9)
+                throw new NumberFormatException("Malformed:  " + s);
+            if (num < multmax)
+                throw new NumberFormatException("Over/underflow:  " + s);
+            num *= 10;
+            if (num < (max + d))
+                throw new NumberFormatException("Over/underflow:  " + s);
+            num -= d;
+        }
 
         return sign * num;
     }
+
 
     public static String[] removeUntil(String[] original, int until) {
         String[] newArray = new String[original.length - until];
@@ -216,5 +251,13 @@ public abstract class CommandExecutor {
 
     public static double fuzzyEqualsString(String a, String b) {
         return 1.0 - (double) StringUtils.getLevenshteinDistance(a, b) / (a.length() >= b.length() ? a.length() : b.length());
+    }
+
+    public void setDefaultElementsPerPage(int defaultElementsPerPage) {
+        this.defaultElementsPerPage = defaultElementsPerPage;
+    }
+
+    public int getDefaultElementsPerPage() {
+        return defaultElementsPerPage;
     }
 }

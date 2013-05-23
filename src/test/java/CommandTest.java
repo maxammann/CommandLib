@@ -1,10 +1,13 @@
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import com.carrotsearch.junitbenchmarks.BenchmarkRule;
 import com.p000ison.dev.commandlib.*;
 import com.p000ison.dev.commandlib.commands.HelpCommand;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -53,13 +56,23 @@ public class CommandTest {
         Command subsubCommand = executor.register(this, "SubSubTest");
         executor.register(this, "Test").addSubCommand(subCommand);
         subCommand.addSubCommand(subsubCommand);
-        executor.register(new HelpCommand(executor, "Help", "helpme", "help", "/%s%s- %s", 3));
+        executor.register(new HelpCommand(executor, "Help", "helpme", "help", "/%s%s- %s"));
     }
 
     @Test
     public void testMainCommand() {
         executor.executeAll(consoleSender, "test hey");
         assertEquals(TEST_TEXT, outContent.toString().trim());
+    }
+
+    @Rule
+    public TestRule benchmarkRun = new BenchmarkRule();
+
+
+    @Test
+    public void testHelpCommand() {
+        executor.executeAll(consoleSender, "help 1");
+//        assertEquals(TEST_TEXT, outContent.toString().trim());
     }
 
     @Test

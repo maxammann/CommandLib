@@ -12,13 +12,13 @@ public class HelpCommand extends Command {
     private final CommandExecutor executor;
     private final String format;
 
-    public HelpCommand(CommandExecutor executor, String name, String usage, String identifier, String format) {
+    public HelpCommand(CommandExecutor executor, String name, String usage, String page, String format, String identifiers) {
         super(name, usage);
         this.executor = executor;
         this.format = format;
 
-        addArgument(new Argument("page", 0, true, false, true, true));
-        setIdentifiers(identifier, "help");
+        addArgument(new Argument(page, 0, true, true));
+        setIdentifiers(identifiers);
     }
 
     @Override

@@ -38,6 +38,14 @@ public class CommandTest {
 
         executor = new CommandExecutor() {
             @Override
+            public void onPreCommand(CallInformation info) {
+            }
+
+            @Override
+            public void onPostCommand(CallInformation info) {
+            }
+
+            @Override
             public void onDisplayCommandHelp(CommandSender sender, Command command) {
                 sender.sendMessage(HELP_TEXT);
             }
@@ -52,11 +60,60 @@ public class CommandTest {
             }
         };
 
-        Command subCommand = executor.register(this, "SubTest");
-        Command subsubCommand = executor.register(this, "SubSubTest");
+        Command subCommand = executor.build(this, "SubTest");
+        Command subsubCommand = executor.build(this, "SubSubTest");
         executor.register(this, "Test").addSubCommand(subCommand);
         subCommand.addSubCommand(subsubCommand);
-        executor.register(new HelpCommand(executor, "Help", "helpme", "help", "/%s%s- %s"));
+        executor.register(new HelpCommand(executor, "Help", "helpme", "help", "help", "/%s%s- %s"));
+    }
+
+    public static void main(String[] args) {
+        ConsoleCommandSender consoleSender = new ConsoleCommandSender();
+
+        CommandExecutor executor = new CommandExecutor() {
+            @Override
+            public void onPreCommand(CallInformation info) {
+            }
+
+            @Override
+            public void onPostCommand(CallInformation info) {
+            }
+
+            @Override
+            public void onDisplayCommandHelp(CommandSender sender, Command command) {
+                sender.sendMessage("help " + command.getName());
+            }
+
+            @Override
+            public void onCommandNotFound(CommandSender sender) {
+                sender.sendMessage("command not found");
+            }
+
+            @Override
+            public void onPermissionFailed(CommandSender sender, Command command) {
+                sender.sendMessage("no permission");
+            }
+        };
+
+        executor.register(new Command() {
+            @Override
+            public void execute(CommandSender sender, CallInformation information) {
+                information.reply("cmd2 " + information);
+            }
+        }.setName("CMD2").setUsage("usage2").setIdentifiers("cmd")
+                .addArgument(new Argument("arg1", 0, false, false, false, false)));
+
+        executor.register(new Command() {
+            @Override
+            public void execute(CommandSender sender, CallInformation information) {
+                information.reply("cmd1 " + information);
+            }
+        }.setName("CMD1").setUsage("usage1").setIdentifiers("cmd")
+                .addArgument(new Argument("arg1", 0, false, false, false, false))
+                .addArgument(new Argument("page", 1, false, false, false, true)));
+
+
+        executor.executeAll(consoleSender, "cmd");
     }
 
     @Test
@@ -67,6 +124,13 @@ public class CommandTest {
 
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
+
+    @Test
+    public void testSpeeeed() {
+        for (int i = 0; i < 50000; i++) {
+            executor.executeAll(consoleSender, "test sub subsub");
+        }
+    }
 
     @Test
     public void testHelpCommand() {
@@ -90,11 +154,6 @@ public class CommandTest {
     @After
     public void clean() {
         outContent.reset();
-    }
-
-    @Test
-    public void testFuzzyStringMatching() {
-        assertEquals("\"test\" does not equal \"test\" to 100%!", 1.0, CommandExecutor.fuzzyEqualsString("test", "test"), 0.0);
     }
 
     @CommandHandler(name = "Test", usage = "None", identifiers = {"test"}, arguments = "test", minArguments = 1, maxArguments = 1)

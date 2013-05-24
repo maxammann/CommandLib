@@ -15,7 +15,6 @@ public abstract class CommandExecutor {
     private final List<Command> commands = new ArrayList<Command>(1);
 
     private int defaultElementsPerPage = 10;
-    private final List<CommandListener> commandListeners = new ArrayList<CommandListener>();
 
     public void executeAll(CommandSender sender, String command) {
 
@@ -48,6 +47,7 @@ public abstract class CommandExecutor {
 
         for (Command command : currentCommands) {
             if (command.isIdentifier(identifier)) {
+
                 CallResult subResult = null;
                 if (argumentsNr > 0) {
                     subResult = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
@@ -68,7 +68,10 @@ public abstract class CommandExecutor {
                     continue;
                 }
 
-                command.execute(sender, createCallInformation(command, sender, identifier, arguments));
+                CallInformation info = createCallInformation(command, sender, identifier, arguments);
+                onPreCommand(info);
+                command.execute(sender, info);
+                onPostCommand(info);
                 result = CallResult.SUCCESS;
             }
         }
@@ -92,51 +95,20 @@ public abstract class CommandExecutor {
         NO_PERMISSION
     }
 
-    public static void main(String[] args) {
-        ConsoleCommandSender consoleSender = new ConsoleCommandSender();
-
-        CommandExecutor executor = new CommandExecutor() {
-            @Override
-            public void onDisplayCommandHelp(CommandSender sender, Command command) {
-                sender.sendMessage("help " + command.getName());
-            }
-
-            @Override
-            public void onCommandNotFound(CommandSender sender) {
-                sender.sendMessage("command not found");
-            }
-
-            @Override
-            public void onPermissionFailed(CommandSender sender, Command command) {
-                sender.sendMessage("no permission");
-            }
-        };
-
-        executor.register(new Command() {
-            @Override
-            public void execute(CommandSender sender, CallInformation information) {
-                information.reply("cmd2 " + information);
-            }
-        }.setName("CMD2").setUsage("usage2").setIdentifiers("cmd")
-                .addArgument(new Argument("arg1", 0, false, false, false, false)));
-
-        executor.register(new Command() {
-            @Override
-            public void execute(CommandSender sender, CallInformation information) {
-                information.reply("cmd1 " + information);
-            }
-        }.setName("CMD1").setUsage("usage1").setIdentifiers("cmd")
-                .addArgument(new Argument("arg1", 0, false, false, false, false))
-                .addArgument(new Argument("page", 1, false, false, false, true)));
-
-
-        executor.executeAll(consoleSender, "cmd");
-    }
 
     protected CallInformation createCallInformation(Command command, CommandSender sender, String identifier, String... arguments) {
         return new CallInformation(this, command, sender, identifier, arguments);
     }
 
+
+    //================================================================================
+    // Listening methods
+    //================================================================================
+
+
+    public abstract void onPreCommand(CallInformation info);
+
+    public abstract void onPostCommand(CallInformation info);
 
     public abstract void onDisplayCommandHelp(CommandSender sender, Command command);
 
@@ -154,21 +126,17 @@ public abstract class CommandExecutor {
         return new Command();
     }
 
-
     public Command build(String name) {
         return new Command().setName(name);
     }
 
-
-    public final Command build(Method method, Object instance) {
-        CommandHandler annotation = getAnnotation(method);
-        if (annotation == null) {
-            throw new IllegalArgumentException("The method does not have a CommandHandler or does not have the correct parameters!");
-        }
-
-        return createCommand(method, instance, annotation);
+    public Command build(Object instance, String name) {
+        return findCommand(instance, name, instance.getClass().getDeclaredMethods());
     }
 
+    public Command build(Class clazz, String name) {
+        return findCommand(null, name, clazz.getDeclaredMethods());
+    }
 
     public Command register(Command command) {
         if (!commands.contains(command)) {
@@ -199,8 +167,18 @@ public abstract class CommandExecutor {
         return register(null, name, clazz.getDeclaredMethods());
     }
 
-
     private Command register(Object instance, String name, Method... methods) {
+        Command cmd = findCommand(instance, name, methods);
+        if (cmd == null) {
+            throw new CommandException(cmd, "Command not found in the class %s!", instance.getClass().getName());
+        }
+
+        register(cmd);
+
+        return cmd;
+    }
+
+    private Command findCommand(Object instance, String name, Method... methods) {
         for (Method method : methods) {
             CommandHandler annotation = getAnnotation(method);
 
@@ -209,13 +187,7 @@ public abstract class CommandExecutor {
                     continue;
                 }
 
-                Command cmd = createCommand(method, instance, annotation);
-
-                if (cmd != null) {
-                    register(cmd);
-
-                    return cmd;
-                }
+                return createCommand(method, instance, annotation);
             }
         }
 
@@ -229,6 +201,15 @@ public abstract class CommandExecutor {
 
     public final List<Command> getCommands() {
         return commands;
+    }
+
+
+    public void setDefaultElementsPerPage(int defaultElementsPerPage) {
+        this.defaultElementsPerPage = defaultElementsPerPage;
+    }
+
+    public int getDefaultElementsPerPage() {
+        return defaultElementsPerPage;
     }
 
     //================================================================================
@@ -306,7 +287,7 @@ public abstract class CommandExecutor {
     }
 
 
-    public static String[] removeUntil(String[] original, int until) {
+    private static String[] removeUntil(String[] original, int until) {
         String[] newArray = new String[original.length - until];
         System.arraycopy(original, until,       // from array[removeEnd]
                 newArray, 0,                    // to array[removeStart]
@@ -315,15 +296,7 @@ public abstract class CommandExecutor {
     }
 
 
-    public static double fuzzyEqualsString(String a, String b) {
+    private static double fuzzyEqualsString(String a, String b) {
         return 1.0 - (double) StringUtils.getLevenshteinDistance(a, b) / (a.length() >= b.length() ? a.length() : b.length());
-    }
-
-    public void setDefaultElementsPerPage(int defaultElementsPerPage) {
-        this.defaultElementsPerPage = defaultElementsPerPage;
-    }
-
-    public int getDefaultElementsPerPage() {
-        return defaultElementsPerPage;
     }
 }

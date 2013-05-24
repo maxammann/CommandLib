@@ -14,7 +14,7 @@ public class CallInformation {
 
     private final CommandExecutor executor;
 
-    public CallInformation(CommandExecutor executor, Command command, CommandSender sender, String identifier, String[] arguments) {
+    protected CallInformation(CommandExecutor executor, Command command, CommandSender sender, String identifier, String[] arguments) {
         this.identifier = identifier;
         this.arguments = arguments;
         this.command = command;

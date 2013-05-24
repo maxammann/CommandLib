@@ -68,7 +68,6 @@ public class CommandTest {
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
 
-
     @Test
     public void testHelpCommand() {
         executor.executeAll(consoleSender, "help 1");

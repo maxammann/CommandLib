@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -33,42 +34,107 @@ public abstract class CommandExecutor {
     }
 
     public void executeAll(CommandSender sender, String identifier, String[] arguments) {
-        if (!executeAll(sender, identifier, arguments, commands)) {
+        if (executeAll(sender, identifier, arguments, commands) == CallResult.NOT_FOUND) {
             onCommandNotFound(sender);
         }
     }
 
-    private boolean executeAll(CommandSender sender, String identifier, String[] arguments, List<Command> currentCommands) {
+    private CallResult executeAll(CommandSender sender, String identifier, String[] arguments, List<Command> currentCommands) {
         int argumentsNr = arguments.length;
+
+        CallResult result = CallResult.NOT_FOUND;
+
+        List<Command> helpCommands = new LinkedList<Command>(), permCommands = new LinkedList<Command>();
 
         for (Command command : currentCommands) {
             if (command.isIdentifier(identifier)) {
-                boolean found = true;
+                CallResult subResult = null;
                 if (argumentsNr > 0) {
-                    found = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
+                    subResult = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
                 }
 
                 if (argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
-                    if (!found) {
-                        onDisplayCommandHelp(sender, command);
+                    //TODO check if argument type is ok
+                    if (subResult != CallResult.SUCCESS) {
+                        helpCommands.add(command);
+                        result = CallResult.DISPLAYED_COMMAND_HELP;
                         continue;
                     }
-                } else if (argumentsNr > 0 && arguments[0].equals("?")) {
-                    onDisplayCommandHelp(sender, command);
-                    continue;
                 }
 
                 if (!command.hasPermission(sender)) {
-                    onPermissionFailed(sender, command);
+                    permCommands.add(command);
+                    result = CallResult.NO_PERMISSION;
                     continue;
                 }
 
-                command.execute(sender, new CallInformation(this, command, sender, identifier, arguments));
-                return true;
+                command.execute(sender, createCallInformation(command, sender, identifier, arguments));
+                result = CallResult.SUCCESS;
             }
         }
 
-        return false;
+        if (result != CallResult.SUCCESS) {
+            for (Command cmd : helpCommands) {
+                onDisplayCommandHelp(sender, cmd);
+            }
+            for (Command cmd : permCommands) {
+                onPermissionFailed(sender, cmd);
+            }
+        }
+
+        return result;
+    }
+
+    private static enum CallResult {
+        SUCCESS,
+        NOT_FOUND,
+        DISPLAYED_COMMAND_HELP,
+        NO_PERMISSION
+    }
+
+    public static void main(String[] args) {
+        ConsoleCommandSender consoleSender = new ConsoleCommandSender();
+
+        CommandExecutor executor = new CommandExecutor() {
+            @Override
+            public void onDisplayCommandHelp(CommandSender sender, Command command) {
+                sender.sendMessage("help " + command.getName());
+            }
+
+            @Override
+            public void onCommandNotFound(CommandSender sender) {
+                sender.sendMessage("command not found");
+            }
+
+            @Override
+            public void onPermissionFailed(CommandSender sender, Command command) {
+                sender.sendMessage("no permission");
+            }
+        };
+
+        executor.register(new Command() {
+            @Override
+            public void execute(CommandSender sender, CallInformation information) {
+                information.reply("cmd2 " + information);
+            }
+        }.setName("CMD2").setUsage("usage2").setIdentifiers("cmd")
+                .addArgument(new Argument("arg1", 0, false, false, false, false)));
+
+        executor.register(new Command() {
+            @Override
+            public void execute(CommandSender sender, CallInformation information) {
+                information.reply("cmd1 " + information);
+            }
+        }.setName("CMD1").setUsage("usage1").setIdentifiers("cmd")
+                .addArgument(new Argument("arg1", 0, false, false, false, false))
+                .addArgument(new Argument("page", 1, false, false, false, true)));
+
+
+        executor.executeAll(consoleSender, "cmd");
+    }
+
+    protected CallInformation createCallInformation(Command command, CommandSender sender, String identifier, String... arguments) {
+        return new CallInformation(this, command, sender, identifier, arguments);
     }
 
 

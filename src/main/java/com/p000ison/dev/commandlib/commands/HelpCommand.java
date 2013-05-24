@@ -32,6 +32,10 @@ public class HelpCommand extends Command {
 
         for (int i = start; i < end; i++) {
             Command command = commands.get(i);
+
+            if (command instanceof HelpEntryValidation && !((HelpEntryValidation) command).displayHelpEntry(sender)) {
+                continue;
+            }
             sender.sendMessage(createLine(command));
         }
     }

@@ -168,6 +168,20 @@ public class Command {
         return this;
     }
 
+    public final Command addArgument(String name) {
+        this.arguments.add(new Argument(name));
+        return this;
+    }
+
+    public final Command addArgument(String name, boolean optional) {
+        this.arguments.add(new Argument(name, optional));
+        return this;
+    }
+
+    public final Command addArgument(String name, boolean optional, boolean page) {
+        this.arguments.add(new Argument(name, optional, page));
+        return this;
+    }
 
     public final Command createArguments(int minArguments, int maxArguments, String[] names) {
         this.arguments = CommandExecutor.createArguments(maxArguments, minArguments, names);

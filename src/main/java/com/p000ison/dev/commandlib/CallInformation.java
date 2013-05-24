@@ -47,9 +47,10 @@ public class CallInformation {
     }
 
     public int getPage(int elements, int elementsPerPage) {
-        for (final Argument argument : command.getArguments()) {
+        for (int i = 0; i < command.getArguments().size(); i++) {
+            Argument argument = command.getArguments().get(i);
             if (argument.isPage()) {
-                int page = getInteger(argument.getPosition());
+                int page = getInteger(i);
 
                 if (page != -1) {
                     int numPages = elements / elementsPerPage;

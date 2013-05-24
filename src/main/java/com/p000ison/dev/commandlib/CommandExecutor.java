@@ -240,7 +240,7 @@ public abstract class CommandExecutor {
         final List<Argument> arguments = new ArrayList<Argument>();
 
         for (int i = 0; i < maxArguments; i++) {
-            arguments.add(new Argument((i < names.length ? names[i] : "param" + i), i, i >= minArguments, false, false, false));
+            arguments.add(new Argument((i < names.length ? names[i] : "param" + i), i >= minArguments, false, false, false));
         }
 
         return arguments;

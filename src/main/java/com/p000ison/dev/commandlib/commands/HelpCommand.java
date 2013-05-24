@@ -17,7 +17,7 @@ public class HelpCommand extends Command {
         this.executor = executor;
         this.format = format;
 
-        addArgument(new Argument(page, 0, true, true));
+        addArgument(new Argument(page, true, true));
         setIdentifiers(identifiers);
     }
 

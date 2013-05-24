@@ -101,7 +101,7 @@ public class CommandTest {
                 information.reply("cmd2 " + information);
             }
         }.setName("CMD2").setUsage("usage2").setIdentifiers("cmd")
-                .addArgument(new Argument("arg1", 0, false, false, false, false)));
+                .addArgument(new Argument("arg1", false, false, false, false)));
 
         executor.register(new Command() {
             @Override
@@ -109,8 +109,8 @@ public class CommandTest {
                 information.reply("cmd1 " + information);
             }
         }.setName("CMD1").setUsage("usage1").setIdentifiers("cmd")
-                .addArgument(new Argument("arg1", 0, false, false, false, false))
-                .addArgument(new Argument("page", 1, false, false, false, true)));
+                .addArgument(new Argument("arg1",  false, false, false, false))
+                .addArgument(new Argument("page", false, false, false, true)));
 
 
         executor.executeAll(consoleSender, "cmd");

@@ -12,19 +12,19 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface CommandHandler {
 
-    String name();
+    String name() default "";
 
-    String usage();
+    String usage() default "";
 
-    String[] identifiers();
+    String[] identifiers() default {};
 
     String[] aliases() default {};
 
     String[] permissions() default {};
 
-    int minArguments();
+    int minArguments() default 0;
 
-    int maxArguments();
+    int maxArguments() default 0;
 
     String[] arguments() default {};
 }

@@ -43,7 +43,9 @@ public class Command {
 
     private List<String> permissions = new ArrayList<String>();
 
+
     private boolean needAllPermissions;
+    private boolean infinite;
 
     protected Command(final String name, final String usage) {
         this.name = name;
@@ -305,5 +307,13 @@ public class Command {
     @Override
     public int hashCode() {
         return name.hashCode();
+    }
+
+    public boolean isInfinite() {
+        return infinite;
+    }
+
+    public void setInfinite(boolean infinite) {
+        this.infinite = infinite;
     }
 }

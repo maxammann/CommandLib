@@ -53,7 +53,7 @@ public abstract class CommandExecutor {
                     subResult = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
                 }
 
-                if (argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
+                if (command.isInfinite() || argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
                     //TODO check if argument type is ok
                     if (subResult != CallResult.SUCCESS) {
                         helpCommands.add(command);

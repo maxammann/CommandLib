@@ -130,12 +130,20 @@ public abstract class CommandExecutor {
         return new Command().setName(name);
     }
 
-    public Command build(Object instance, String name) {
-        return findCommand(instance, name, instance.getClass().getDeclaredMethods());
+    public Command build(Object instance, String commandName) {
+        return findCommand(instance, commandName, null, instance.getClass().getDeclaredMethods());
     }
 
-    public Command build(Class clazz, String name) {
-        return findCommand(null, name, clazz.getDeclaredMethods());
+    public Command build(Class clazz, String commandName) {
+        return findCommand(null, commandName, null, clazz.getDeclaredMethods());
+    }
+
+    public Command buildByMethod(Object instance, String methodName) {
+        return findCommand(instance, null, methodName, instance.getClass().getDeclaredMethods());
+    }
+
+    public Command buildByMethod(Class clazz, String methodName) {
+        return findCommand(null, null, methodName, clazz.getDeclaredMethods());
     }
 
     public Command register(Command command) {
@@ -147,28 +155,32 @@ public abstract class CommandExecutor {
         return command;
     }
 
-
     public Command register(Object instance) {
-        return register(instance, null, instance.getClass().getDeclaredMethods());
+        return register(instance, null, null, instance.getClass().getDeclaredMethods());
     }
-
 
     public Command register(Class clazz) {
-        return register(null, null, clazz.getDeclaredMethods());
+        return register(null, null, null, clazz.getDeclaredMethods());
     }
 
-
-    public Command register(Object instance, String name) {
-        return register(instance, name, instance.getClass().getDeclaredMethods());
+    public Command register(Object instance, String commandName) {
+        return register(instance, commandName, null, instance.getClass().getDeclaredMethods());
     }
 
-
-    public Command register(Class clazz, String name) {
-        return register(null, name, clazz.getDeclaredMethods());
+    public Command register(Class clazz, String commandName) {
+        return register(null, commandName, null, clazz.getDeclaredMethods());
     }
 
-    private Command register(Object instance, String name, Method... methods) {
-        Command cmd = findCommand(instance, name, methods);
+    public Command registerByMethod(Object instance, String methodName) {
+        return register(instance, null, methodName, instance.getClass().getDeclaredMethods());
+    }
+
+    public Command registerByMethod(Class clazz, String methodName) {
+        return register(null, null, methodName, clazz.getDeclaredMethods());
+    }
+
+    private Command register(Object instance, String commandName, String methodName, Method... methods) {
+        Command cmd = findCommand(instance, commandName, methodName, methods);
         if (cmd == null) {
             throw new CommandException(cmd, "Command not found in the class %s!", instance.getClass().getName());
         }
@@ -178,12 +190,16 @@ public abstract class CommandExecutor {
         return cmd;
     }
 
-    private Command findCommand(Object instance, String name, Method... methods) {
+    private Command findCommand(Object instance, String commandName, String methodName, Method... methods) {
         for (Method method : methods) {
+            if (methodName != null && !method.getName().equals(methodName)) {
+                continue;
+            }
+
             CommandHandler annotation = getAnnotation(method);
 
             if (annotation != null) {
-                if (name != null && !annotation.name().equals(name)) {
+                if (commandName != null && !annotation.name().equals(commandName)) {
                     continue;
                 }
 

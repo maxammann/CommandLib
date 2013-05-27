@@ -44,7 +44,7 @@ public class HelpCommand extends Command {
             if (subCommands) {
                 subReturn.addCommand(command);
 
-                if (showHelp(sender, subReturn.lastCommands.get(commands.size() - 1))) {
+                if (showHelp(sender, subReturn.lastCommands.getLast())) {
                     sender.sendMessage(createLine(subReturn.lastCommands));
                 }
             } else {
@@ -64,6 +64,9 @@ public class HelpCommand extends Command {
     }
 
     private boolean showHelp(CommandSender sender, Command command) {
+        if (command == null) {
+            return false;
+        }
         if (command instanceof HelpEntryValidation && !((HelpEntryValidation) command).displayHelpEntry(sender)) {
             return false;
         } else if (command instanceof AnnotatedCommand && !((AnnotatedCommand) command).isExecutionAllowed(sender)) {
@@ -75,7 +78,7 @@ public class HelpCommand extends Command {
 
     private static class HelpData {
         private int global;
-        private List<Command> lastCommands = new LinkedList<Command>();
+        private LinkedList<Command> lastCommands = new LinkedList<Command>();
 
         private HelpData(int global) {
             this.global = global;
@@ -101,7 +104,7 @@ public class HelpCommand extends Command {
         return String.format(format, identifier, argumentsString.toString(), usage);
     }
 
-    private String createLine(List<Command> commands) {
+    private String createLine(LinkedList<Command> commands) {
 
         StringBuilder identifiers = new StringBuilder();
 
@@ -109,7 +112,7 @@ public class HelpCommand extends Command {
             identifiers.append(command.getIdentifiers()[0]).append(' ');
         }
 
-        Command lastCommand = commands.get(commands.size() - 1);
+        Command lastCommand = commands.getLast();
 
         String usage = lastCommand.getUsage();
 

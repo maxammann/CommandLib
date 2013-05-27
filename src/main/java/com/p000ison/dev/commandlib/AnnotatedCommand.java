@@ -10,6 +10,7 @@ import java.util.List;
 public class AnnotatedCommand extends Command {
     private final Method executeMethod;
     private final Object methodInstance;
+    private ExecutionRestriction executionRestriction;
 
     /**
      * Creates a new command based on information given by an annotation
@@ -34,7 +35,11 @@ public class AnnotatedCommand extends Command {
 
 
     @Override
-    public void execute(final CommandSender sender, final CallInformation information) {
+    public final void execute(final CommandSender sender, final CallInformation information) {
+        if (!isExecutionAllowed(sender)) {
+            return;
+        }
+
         if (executeMethod != null) {
             try {
                 executeMethod.invoke(methodInstance, sender, information);
@@ -44,5 +49,13 @@ public class AnnotatedCommand extends Command {
                 throw new CommandException(this, e, "Exception in method: %s", executeMethod.getName());
             }
         }
+    }
+
+    public boolean isExecutionAllowed(CommandSender sender) {
+        return !(executionRestriction != null && !executionRestriction.allowExecution(sender, this));
+    }
+
+    public void setExecutionRestriction(ExecutionRestriction executionRestriction) {
+        this.executionRestriction = executionRestriction;
     }
 }

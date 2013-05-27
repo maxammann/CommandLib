@@ -35,6 +35,8 @@ public class HelpCommand extends Command {
 
             if (command instanceof HelpEntryValidation && !((HelpEntryValidation) command).displayHelpEntry(sender)) {
                 continue;
+            } else if (command instanceof AnnotatedCommand && !((AnnotatedCommand) command).isExecutionAllowed(sender)) {
+                continue;
             }
             sender.sendMessage(createLine(command));
         }

@@ -2,6 +2,7 @@ package com.p000ison.dev.commandlib.commands;
 
 import com.p000ison.dev.commandlib.*;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -23,11 +24,7 @@ public class HelpCommand extends Command {
 
     @Override
     public void execute(CommandSender sender, CallInformation information) {
-        int size = executor.getCommands().size();
-
-        for  (Command command : executor.getCommands()) {
-            size += command.getSubCommands().size();
-        }
+        int size = executor.countCommands();
 
         final int page = information.getPage(size);
         final int start = information.getStartIndex(page, size);
@@ -35,35 +32,58 @@ public class HelpCommand extends Command {
 
         final List<Command> commands = executor.getCommands();
 
-        all: for (int i = start; i < end; i++) {
-            Command command = commands.get(i);
+        createLines(commands, sender, end, new HelpData(start), false);
 
-            if (command instanceof HelpEntryValidation && !((HelpEntryValidation) command).displayHelpEntry(sender)) {
-                continue;
-            } else if (command instanceof AnnotatedCommand && !((AnnotatedCommand) command).isExecutionAllowed(sender)) {
-                continue;
+    }
+
+    private void createLines(List<Command> commands, CommandSender sender, int end, HelpData subReturn, boolean subCommands) {
+        for (Command command : commands) {
+            subReturn.global++;
+
+
+            if (subCommands) {
+                subReturn.addCommand(command);
+
+                if (showHelp(sender, subReturn.lastCommands.get(commands.size() - 1))) {
+                    sender.sendMessage(createLine(subReturn.lastCommands));
+                }
+            } else {
+                if (showHelp(sender, command)) {
+                    sender.sendMessage(createLine(command));
+                }
+                subReturn.lastCommands.clear();
+                subReturn.addCommand(command);
             }
 
-            sender.sendMessage(createLine(command));
+            createLines(command.getSubCommands(), sender, end, subReturn, true);
 
-            for (int j = 0; j < command.getSubCommands().size(); j++) {
-                i++;
-
-                if (i >= end) {
-                    break all;
-                }
-
-                Command sub = command.getSubCommands().get(j);
-
-
-                if (sub instanceof HelpEntryValidation && !((HelpEntryValidation) sub).displayHelpEntry(sender)) {
-                    continue;
-                } else if (sub instanceof AnnotatedCommand && !((AnnotatedCommand) sub).isExecutionAllowed(sender)) {
-                    continue;
-                }
-
-                sender.sendMessage(createLine(sub));
+            if (subReturn.global == end) {
+                return;
             }
+        }
+    }
+
+    private boolean showHelp(CommandSender sender, Command command) {
+        if (command instanceof HelpEntryValidation && !((HelpEntryValidation) command).displayHelpEntry(sender)) {
+            return false;
+        } else if (command instanceof AnnotatedCommand && !((AnnotatedCommand) command).isExecutionAllowed(sender)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static class HelpData {
+        private int global;
+        private List<Command> lastCommands = new LinkedList<Command>();
+
+        private HelpData(int global) {
+            this.global = global;
+
+        }
+
+        public void addCommand(Command cmd) {
+            lastCommands.add(cmd);
         }
     }
 
@@ -72,11 +92,33 @@ public class HelpCommand extends Command {
         String identifier = command.getIdentifiers()[0];
         String usage = command.getUsage();
 
+
         StringBuilder argumentsString = new StringBuilder().append(' ');
         for (Argument argument : command.getArguments()) {
             argumentsString.append('<').append(argument.getName()).append('>').append(' ');
         }
 
         return String.format(format, identifier, argumentsString.toString(), usage);
+    }
+
+    private String createLine(List<Command> commands) {
+
+        StringBuilder identifiers = new StringBuilder();
+
+        for (Command command : commands) {
+            identifiers.append(command.getIdentifiers()[0]).append(' ');
+        }
+
+        Command lastCommand = commands.get(commands.size() - 1);
+
+        String usage = lastCommand.getUsage();
+
+
+        StringBuilder argumentsString = new StringBuilder().append(' ');
+        for (Argument argument : lastCommand.getArguments()) {
+            argumentsString.append('<').append(argument.getName()).append('>').append(' ');
+        }
+
+        return String.format(format, identifiers.toString(), argumentsString.toString(), usage);
     }
 }

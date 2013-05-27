@@ -24,13 +24,18 @@ public class HelpCommand extends Command {
     @Override
     public void execute(CommandSender sender, CallInformation information) {
         int size = executor.getCommands().size();
+
+        for  (Command command : executor.getCommands()) {
+            size += command.getSubCommands().size();
+        }
+
         final int page = information.getPage(size);
         final int start = information.getStartIndex(page, size);
         final int end = information.getEndIndex(page, size);
 
         final List<Command> commands = executor.getCommands();
 
-        for (int i = start; i < end; i++) {
+        all: for (int i = start; i < end; i++) {
             Command command = commands.get(i);
 
             if (command instanceof HelpEntryValidation && !((HelpEntryValidation) command).displayHelpEntry(sender)) {
@@ -38,7 +43,27 @@ public class HelpCommand extends Command {
             } else if (command instanceof AnnotatedCommand && !((AnnotatedCommand) command).isExecutionAllowed(sender)) {
                 continue;
             }
+
             sender.sendMessage(createLine(command));
+
+            for (int j = 0; j < command.getSubCommands().size(); j++) {
+                i++;
+
+                if (i >= end) {
+                    break all;
+                }
+
+                Command sub = command.getSubCommands().get(j);
+
+
+                if (sub instanceof HelpEntryValidation && !((HelpEntryValidation) sub).displayHelpEntry(sender)) {
+                    continue;
+                } else if (sub instanceof AnnotatedCommand && !((AnnotatedCommand) sub).isExecutionAllowed(sender)) {
+                    continue;
+                }
+
+                sender.sendMessage(createLine(sub));
+            }
         }
     }
 

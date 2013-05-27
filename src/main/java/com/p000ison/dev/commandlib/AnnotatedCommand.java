@@ -55,7 +55,8 @@ public class AnnotatedCommand extends Command {
         return !(executionRestriction != null && !executionRestriction.allowExecution(sender, this));
     }
 
-    public void setExecutionRestriction(ExecutionRestriction executionRestriction) {
+    public AnnotatedCommand setExecutionRestriction(ExecutionRestriction executionRestriction) {
         this.executionRestriction = executionRestriction;
+        return this;
     }
 }

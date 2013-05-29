@@ -58,13 +58,17 @@ public class CommandTest {
             @Override
             public void onPermissionFailed(CommandSender sender, Command command) {
             }
+
+            @Override
+            public void onPermissionFailed(CommandSender sender) {
+            }
         };
 
         Command subCommand = executor.build(this, "SubTest");
         Command subsubCommand = executor.build(this, "SubSubTest");
         executor.register(this, "Test").addSubCommand(subCommand);
         subCommand.addSubCommand(subsubCommand);
-        executor.register(new HelpCommand(executor, "Help", "helpme", "help", "help", "/%s%s- %s"));
+        executor.register(new HelpCommand(executor, "Help", "helpme", "help",  "help"));
     }
 
     public static void main(String[] args) {
@@ -93,6 +97,10 @@ public class CommandTest {
             public void onPermissionFailed(CommandSender sender, Command command) {
                 sender.sendMessage("no permission");
             }
+
+            @Override
+            public void onPermissionFailed(CommandSender sender) {
+            }
         };
 
         executor.register(new Command() {
@@ -101,7 +109,7 @@ public class CommandTest {
                 information.reply("cmd2 " + information);
             }
         }.setName("CMD2").setUsage("usage2").setIdentifiers("cmd")
-                .addArgument(new Argument("arg1", false, false, false, false)));
+                .addArgument(new Argument("arg1", false)));
 
         executor.register(new Command() {
             @Override
@@ -109,8 +117,8 @@ public class CommandTest {
                 information.reply("cmd1 " + information);
             }
         }.setName("CMD1").setUsage("usage1").setIdentifiers("cmd")
-                .addArgument(new Argument("arg1",  false, false, false, false))
-                .addArgument(new Argument("page", false, false, false, true)));
+                .addArgument(new Argument("arg1",  false))
+                .addArgument(new Argument("page", false)));
 
 
         executor.executeAll(consoleSender, "cmd");
@@ -125,17 +133,12 @@ public class CommandTest {
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
 
-    @Test
-    public void testSpeeeed() {
-        for (int i = 0; i < 50000; i++) {
-            executor.executeAll(consoleSender, "test sub subsub");
-        }
-    }
+
 
     @Test
     public void testHelpCommand() {
-        executor.executeAll(consoleSender, "help 1");
-//        assertEquals(TEST_TEXT, outContent.toString().trim());
+        executor.executeAll(consoleSender, "help");
+        assertEquals(TEST_TEXT, outContent.toString().trim());
     }
 
     @Test

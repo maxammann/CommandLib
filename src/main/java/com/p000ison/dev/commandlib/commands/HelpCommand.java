@@ -2,8 +2,8 @@ package com.p000ison.dev.commandlib.commands;
 
 import com.p000ison.dev.commandlib.*;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a HelpCommand
@@ -11,15 +11,19 @@ import java.util.List;
 public class HelpCommand extends Command {
 
     private final CommandExecutor executor;
-    private final String format;
+    private final Map<Command, String> help;
 
-    public HelpCommand(CommandExecutor executor, String name, String usage, String page, String format, String identifiers) {
+    public HelpCommand(CommandExecutor executor, String name, String usage, String page, String identifiers) {
         super(name, usage);
         this.executor = executor;
-        this.format = format;
 
         addArgument(new Argument(page, true, true));
         setIdentifiers(identifiers);
+
+        final List<Command> commands = executor.getCommands();
+        HelpCommandBuilder builder = new HelpCommandBuilder(commands);
+        builder.buildHelp();
+        help = builder.getOutput();
     }
 
     @Override
@@ -30,35 +34,28 @@ public class HelpCommand extends Command {
         final int start = information.getStartIndex(page, size);
         final int end = information.getEndIndex(page, size);
 
-        final List<Command> commands = executor.getCommands();
-
-        createLines(commands, sender, end, new HelpData(start), false);
-
+        sendHelp(sender, help, end - 1, start);
     }
 
-    private void createLines(List<Command> commands, CommandSender sender, int end, HelpData subReturn, boolean subCommands) {
-        for (Command command : commands) {
-            subReturn.global++;
+    public void sendHelp(CommandSender sender, Map<Command, String> commands, int endIndex, int startIndex) {
+        int current = startIndex;
 
-
-            if (subCommands) {
-                subReturn.addCommand(command);
-
-                if (showHelp(sender, subReturn.lastCommands.getLast())) {
-                    sender.sendMessage(createLine(subReturn.lastCommands));
-                }
-            } else {
-                if (showHelp(sender, command)) {
-                    sender.sendMessage(createLine(command));
-                }
-                subReturn.lastCommands.clear();
-                subReturn.addCommand(command);
+        for (Map.Entry<Command, String> entry : commands.entrySet()) {
+            if (current > endIndex) {
+                return;
             }
 
-            createLines(command.getSubCommands(), sender, end, subReturn, true);
+            Command command = entry.getKey();
+            String help = entry.getValue();
 
-            if (subReturn.global == end) {
-                return;
+            if (current >= startIndex) {
+                if (showHelp(sender, command)) {
+                    current++;
+
+                    sender.sendMessage(help);
+                }
+            } else {
+                current++;
             }
         }
     }
@@ -74,54 +71,5 @@ public class HelpCommand extends Command {
         }
 
         return true;
-    }
-
-    private static class HelpData {
-        private int global;
-        private LinkedList<Command> lastCommands = new LinkedList<Command>();
-
-        private HelpData(int global) {
-            this.global = global;
-
-        }
-
-        public void addCommand(Command cmd) {
-            lastCommands.add(cmd);
-        }
-    }
-
-    private String createLine(Command command) {
-
-        String identifier = command.getIdentifiers()[0];
-        String usage = command.getUsage();
-
-
-        StringBuilder argumentsString = new StringBuilder().append(' ');
-        for (Argument argument : command.getArguments()) {
-            argumentsString.append('<').append(argument.getName()).append('>').append(' ');
-        }
-
-        return String.format(format, identifier, argumentsString.toString(), usage);
-    }
-
-    private String createLine(LinkedList<Command> commands) {
-
-        StringBuilder identifiers = new StringBuilder();
-
-        for (Command command : commands) {
-            identifiers.append(command.getIdentifiers()[0]).append(' ');
-        }
-
-        Command lastCommand = commands.getLast();
-
-        String usage = lastCommand.getUsage();
-
-
-        StringBuilder argumentsString = new StringBuilder().append(' ');
-        for (Argument argument : lastCommand.getArguments()) {
-            argumentsString.append('<').append(argument.getName()).append('>').append(' ');
-        }
-
-        return String.format(format, identifiers.toString(), argumentsString.toString(), usage);
     }
 }

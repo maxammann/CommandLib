@@ -80,8 +80,13 @@ public abstract class CommandExecutor {
             for (Command cmd : helpCommands) {
                 onDisplayCommandHelp(sender, cmd);
             }
+
             for (Command cmd : permCommands) {
                 onPermissionFailed(sender, cmd);
+            }
+
+            if (!permCommands.isEmpty()) {
+                onPermissionFailed(sender);
             }
         }
 
@@ -115,6 +120,8 @@ public abstract class CommandExecutor {
     public abstract void onCommandNotFound(CommandSender sender);
 
     public abstract void onPermissionFailed(CommandSender sender, Command command);
+
+    public abstract void onPermissionFailed(CommandSender sender);
 
 
     //================================================================================
@@ -215,12 +222,14 @@ public abstract class CommandExecutor {
     }
 
     public int countCommands() {
-        return countCommands(0, commands);
+        return countCommands(commands);
     }
 
-    private int countCommands(int count, List<Command> commands) {
+    private int countCommands(List<Command> commands) {
+        int count = 0;
         for (Command command : commands) {
-            count += countCommands(count, command.getSubCommands());
+            count++;
+            count += countCommands(command.getSubCommands());
         }
 
         return count;
@@ -267,7 +276,7 @@ public abstract class CommandExecutor {
         final List<Argument> arguments = new ArrayList<Argument>();
 
         for (int i = 0; i < maxArguments; i++) {
-            arguments.add(new Argument((i < names.length ? names[i] : "param" + i), i >= minArguments, false, false, false));
+            arguments.add(new Argument((i < names.length ? names[i] : "param" + i), i >= minArguments));
         }
 
         return arguments;

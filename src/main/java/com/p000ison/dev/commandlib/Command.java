@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Represents a Command
+ * This represents a command.
  */
 public class Command {
 
@@ -42,7 +42,6 @@ public class Command {
      */
 
     private List<String> permissions = new ArrayList<String>();
-
 
     private boolean needAllPermissions;
     private boolean infinite;
@@ -98,7 +97,6 @@ public class Command {
         return false;
     }
 
-
     public final List<Command> getSubCommands() {
         return subCommands;
     }
@@ -119,16 +117,13 @@ public class Command {
         return min;
     }
 
-
     public final List<Argument> getArguments() {
         return arguments;
     }
 
-
     public final List<Command> getCallMethods() {
         return callMethods;
     }
-
 
     public final List<String> getPermissions() {
         return permissions;
@@ -190,42 +185,35 @@ public class Command {
         return this;
     }
 
-
     public final Command addPermission(String permission) {
         this.permissions.add(permission);
         return this;
     }
-
 
     public final Command setIdentifiers(String... identifiers) {
         this.identifiers = identifiers;
         return this;
     }
 
-
     public final Command addAlias(Command alias) {
         this.callMethods.add(alias);
         return this;
     }
-
 
     public final Command setName(String name) {
         this.name = name;
         return this;
     }
 
-
     public final Command setUsage(String usage) {
         this.usage = usage;
         return this;
     }
 
-
     public final Command setNeedAllPermissions(boolean needAllPermissions) {
         this.needAllPermissions = needAllPermissions;
         return this;
     }
-
 
     public final Command addSubCommand(Command subCommand) {
         this.subCommands.add(subCommand);
@@ -236,6 +224,13 @@ public class Command {
     //  Execute methods
     //================================================================================
 
+    /**
+     * This methods gets executed when this command gets called. You should override this if you want anything
+     * to happen if this command is executed.
+     *
+     * @param sender      The sender who called this command
+     * @param information The additional information about this command. Contains for example the arguments.
+     */
     public void execute(final CommandSender sender, final CallInformation information) {
     }
 
@@ -309,10 +304,16 @@ public class Command {
         return name.hashCode();
     }
 
+    /**
+     * @return Whether this command takes infinite arguments
+     */
     public boolean isInfinite() {
         return infinite;
     }
 
+    /**
+     * Whether this command takes infinite arguments
+     */
     public void setInfinite(boolean infinite) {
         this.infinite = infinite;
     }

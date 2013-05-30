@@ -68,7 +68,7 @@ public class CommandTest {
         Command subsubCommand = executor.build(this, "SubSubTest");
         executor.register(this, "Test").addSubCommand(subCommand);
         subCommand.addSubCommand(subsubCommand);
-        executor.register(new HelpCommand(executor, "Help", "helpme", "help",  "help", "ids-args-usage"));
+        executor.register(new HelpCommand(executor, "Help", "helpme", "help", "help", "ids-args-usage"));
     }
 
     public static void main(String[] args) {
@@ -117,7 +117,7 @@ public class CommandTest {
                 information.reply("cmd1 " + information);
             }
         }.setName("CMD1").setUsage("usage1").setIdentifiers("cmd")
-                .addArgument(new Argument("arg1",  false))
+                .addArgument(new Argument("arg1", false))
                 .addArgument(new Argument("page", false)));
 
 

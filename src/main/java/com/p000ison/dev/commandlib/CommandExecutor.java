@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Represents a CommandExecutor
+ * A CommandExecutor handles the registration of commands and executes commands.
  */
 public abstract class CommandExecutor {
 
@@ -71,6 +71,7 @@ public abstract class CommandExecutor {
                 CallInformation info = createCallInformation(command, sender, identifier, arguments);
                 onPreCommand(info);
                 command.execute(sender, info);
+                command.executeCallMethods(sender, info);
                 onPostCommand(info);
                 result = CallResult.SUCCESS;
             }

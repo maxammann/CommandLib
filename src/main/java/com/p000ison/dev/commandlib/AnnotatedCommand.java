@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 /**
- * Represents a AnnotatedCommand
+ * This represents a command, which was created to execute a method which was annotated by {@link CommandHandler}
  */
 public class AnnotatedCommand extends Command {
     private final Method executeMethod;

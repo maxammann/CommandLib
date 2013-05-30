@@ -221,20 +221,6 @@ public abstract class CommandExecutor {
         return commands.contains(command);
     }
 
-    public int countCommands() {
-        return countCommands(commands);
-    }
-
-    private int countCommands(List<Command> commands) {
-        int count = 0;
-        for (Command command : commands) {
-            count++;
-            count += countCommands(command.getSubCommands());
-        }
-
-        return count;
-    }
-
     public final List<Command> getCommands() {
         return commands;
     }

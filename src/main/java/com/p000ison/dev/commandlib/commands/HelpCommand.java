@@ -28,7 +28,7 @@ public class HelpCommand extends Command {
 
     @Override
     public void execute(CommandSender sender, CallInformation information) {
-        int size = executor.countCommands();
+        int size = countCommands(sender, executor.getCommands());
 
         final int page = information.getPage(size);
         final int start = information.getStartIndex(page, size);
@@ -37,15 +37,24 @@ public class HelpCommand extends Command {
         sendHelp(sender, help, end - 1, start);
     }
 
+
+    private int countCommands(CommandSender sender, List<Command> commands) {
+        int count = 0;
+        for (Command command : commands) {
+            if (!showHelp(sender, command)) {
+                continue;
+            }
+            count++;
+            count += countCommands(sender, command.getSubCommands());
+        }
+
+        return count;
+    }
+
     public void sendHelp(CommandSender sender, Map<Command, String> commands, int endIndex, int startIndex) {
         int current = 0;
 
         for (Map.Entry<Command, String> entry : commands.entrySet()) {
-            if (current <= startIndex) {
-                current++;
-                continue;
-            }
-
             if (current > endIndex) {
                 return;
             }
@@ -53,15 +62,15 @@ public class HelpCommand extends Command {
             Command command = entry.getKey();
             String help = entry.getValue();
 
-            if (current >= startIndex) {
-                if (showHelp(sender, command)) {
-                    current++;
-
-                    sender.sendMessage(help);
-                }
-            } else {
-                current++;
+            if (!showHelp(sender, command)) {
+                continue;
             }
+
+            if (current >= startIndex) {
+                sender.sendMessage(help);
+            }
+
+            current++;
         }
     }
 

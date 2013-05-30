@@ -36,17 +36,17 @@ class HelpCommandBuilder {
 
             processCommands(commandStack);
 
-            if (command.getSubCommands().isEmpty() && commands.size() != 1) {
-                commandStack.pollLast();
-            }
+//            if (command.getSubCommands().isEmpty()) {
+//                commandStack.pollLast();
+//            }
 
             buildHelp(command.getSubCommands());
         }
 
-        //Normally finished
-        if (!commandStack.isEmpty()) {
+//        //Normally finished
+//        if (commands.isEmpty()) {
             commandStack.pollLast();
-        }
+//        }
     }
 
     private void processCommands(Deque<Command> commands) {

@@ -53,6 +53,11 @@ public abstract class CommandExecutor {
                     subResult = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
                 }
 
+                if (!command.allowExecution(sender)) {
+                    onExecutionBlocked(sender, command);
+                    continue;
+                }
+
                 if (command.isInfinite() || argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
                     //TODO check if argument type is ok
                     if (subResult != CallResult.SUCCESS) {
@@ -113,6 +118,8 @@ public abstract class CommandExecutor {
 
 
     public abstract void onPreCommand(CallInformation info);
+
+    public abstract void onExecutionBlocked(CommandSender sender, Command command);
 
     public abstract void onPostCommand(CallInformation info);
 

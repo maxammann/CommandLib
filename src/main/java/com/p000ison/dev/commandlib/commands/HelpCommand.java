@@ -41,7 +41,7 @@ public class HelpCommand extends Command {
     private int countCommands(CommandSender sender, List<Command> commands) {
         int count = 0;
         for (Command command : commands) {
-            if (!showHelp(sender, command)) {
+            if (!allowExecution(sender)) {
                 continue;
             }
             count++;
@@ -62,7 +62,7 @@ public class HelpCommand extends Command {
             Command command = entry.getKey();
             String help = entry.getValue();
 
-            if (!showHelp(sender, command)) {
+            if (!command.allowExecution(sender)) {
                 continue;
             }
 
@@ -72,18 +72,5 @@ public class HelpCommand extends Command {
 
             current++;
         }
-    }
-
-    private boolean showHelp(CommandSender sender, Command command) {
-        if (command == null) {
-            return false;
-        }
-        if (command instanceof HelpEntryValidation && !((HelpEntryValidation) command).displayHelpEntry(sender)) {
-            return false;
-        } else if (command instanceof AnnotatedCommand && !((AnnotatedCommand) command).isExecutionAllowed(sender)) {
-            return false;
-        }
-
-        return true;
     }
 }

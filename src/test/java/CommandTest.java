@@ -42,6 +42,10 @@ public class CommandTest {
             }
 
             @Override
+            public void onExecutionBlocked(CommandSender sender, Command command) {
+            }
+
+            @Override
             public void onPostCommand(CallInformation info) {
             }
 
@@ -77,6 +81,10 @@ public class CommandTest {
         CommandExecutor executor = new CommandExecutor() {
             @Override
             public void onPreCommand(CallInformation info) {
+            }
+
+            @Override
+            public void onExecutionBlocked(CommandSender sender, Command command) {
             }
 
             @Override

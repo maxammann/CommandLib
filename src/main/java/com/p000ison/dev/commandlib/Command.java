@@ -234,6 +234,10 @@ public class Command {
     public void execute(final CommandSender sender, final CallInformation information) {
     }
 
+    public boolean allowExecution(CommandSender sender){
+        return true;
+    }
+
     void executeCallMethods(CommandSender sender, CallInformation info) {
         for (Command command : getCallMethods()) {
             command.execute(sender, info);

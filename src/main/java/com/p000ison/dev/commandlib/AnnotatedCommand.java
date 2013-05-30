@@ -36,10 +36,6 @@ public class AnnotatedCommand extends Command {
 
     @Override
     public final void execute(final CommandSender sender, final CallInformation information) {
-        if (!isExecutionAllowed(sender)) {
-            return;
-        }
-
         if (executeMethod != null) {
             try {
                 executeMethod.invoke(methodInstance, sender, information);
@@ -51,12 +47,19 @@ public class AnnotatedCommand extends Command {
         }
     }
 
-    public boolean isExecutionAllowed(CommandSender sender) {
+    @Override
+    public final boolean allowExecution(CommandSender sender) {
         return !(executionRestriction != null && !executionRestriction.allowExecution(sender, this));
     }
 
     public AnnotatedCommand setExecutionRestriction(ExecutionRestriction executionRestriction) {
         this.executionRestriction = executionRestriction;
         return this;
+    }
+
+
+    public static interface ExecutionRestriction {
+
+        boolean allowExecution(CommandSender sender, Command command);
     }
 }

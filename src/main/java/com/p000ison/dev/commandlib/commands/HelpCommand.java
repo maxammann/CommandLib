@@ -13,7 +13,7 @@ public class HelpCommand extends Command {
     private final CommandExecutor executor;
     private final Map<Command, String> help;
 
-    public HelpCommand(CommandExecutor executor, String name, String usage, String page, String identifiers) {
+    public HelpCommand(CommandExecutor executor, String name, String usage, String page, String identifiers, String format) {
         super(name, usage);
         this.executor = executor;
 
@@ -21,7 +21,7 @@ public class HelpCommand extends Command {
         setIdentifiers(identifiers);
 
         final List<Command> commands = executor.getCommands();
-        HelpCommandBuilder builder = new HelpCommandBuilder(commands);
+        HelpCommandBuilder builder = new HelpCommandBuilder(commands, format);
         builder.buildHelp();
         help = builder.getOutput();
     }
@@ -38,9 +38,14 @@ public class HelpCommand extends Command {
     }
 
     public void sendHelp(CommandSender sender, Map<Command, String> commands, int endIndex, int startIndex) {
-        int current = startIndex;
+        int current = 0;
 
         for (Map.Entry<Command, String> entry : commands.entrySet()) {
+            if (current <= startIndex) {
+                current++;
+                continue;
+            }
+
             if (current > endIndex) {
                 return;
             }

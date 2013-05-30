@@ -13,36 +13,40 @@ class HelpCommandBuilder {
 
     private Deque<Command> commandStack = new LinkedList<Command>();
 
-    private Map<Command, String> output = new HashMap<Command, String>();
+    private Map<Command, String> output = new LinkedHashMap<Command, String>();
 
-    HelpCommandBuilder(List<Command> commands) {
+
+    /**
+     * -ids-args-usage
+     */
+    private String format;
+
+    HelpCommandBuilder(List<Command> commands, String format) {
         this.commands = commands;
+        this.format = format;
     }
 
     public void buildHelp() {
         buildHelp(commands);
     }
 
-    public boolean buildHelp(List<Command> commands) {
-        if (commands.isEmpty()) {
-            return true;
-        }
-
+    public void buildHelp(List<Command> commands) {
         for (Command command : commands) {
             commandStack.add(command);
 
             processCommands(commandStack);
 
-            if (buildHelp(command.getSubCommands())) {
+            if (command.getSubCommands().isEmpty() && commands.size() != 1) {
                 commandStack.pollLast();
             }
+
+            buildHelp(command.getSubCommands());
         }
 
         //Normally finished
         if (!commandStack.isEmpty()) {
             commandStack.pollLast();
         }
-        return false;
     }
 
     private void processCommands(Deque<Command> commands) {
@@ -58,17 +62,27 @@ class HelpCommandBuilder {
         if (commands.isEmpty()) {
             return null;
         }
-        StringBuilder line = new StringBuilder();
+
+        StringBuilder builder = new StringBuilder();
+        String output = format;
 
         for (Command command : commands) {
-            appendIdentifier(line, command);
+            appendIdentifier(builder, command);
         }
 
-        Command lastCommand = commands.getLast();
-        appendUsage(line, lastCommand);
-        appendArguments(line, lastCommand);
+        output = output.replace("-ids", builder.toString());
+        builder.setLength(0);
 
-        return line.toString().trim();
+        Command lastCommand = commands.getLast();
+
+        appendArguments(builder, lastCommand);
+        output = output.replace("-args", builder.toString());
+        builder.setLength(0);
+
+        appendUsage(builder, lastCommand);
+        output = output.replace("-usage", builder.toString());
+
+        return output;
     }
 
     private void appendIdentifier(StringBuilder builder, Command command) {
@@ -81,7 +95,7 @@ class HelpCommandBuilder {
 
     private void appendArguments(StringBuilder builder, Command command) {
         for (Argument argument : command.getArguments()) {
-            builder.append('<').append(argument.getName()).append('>').append(' ');
+            builder.append(argument.isRequired() ? '<' : '[').append(argument.getName()).append(argument.isRequired() ? '>' : ']').append(' ');
         }
     }
 

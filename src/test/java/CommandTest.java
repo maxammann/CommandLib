@@ -133,14 +133,6 @@ public class CommandTest {
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
 
-
-
-    @Test
-    public void testHelpCommand() {
-        executor.executeAll(consoleSender, "help");
-//        assertEquals(TEST_TEXT, outContent.toString().trim());
-    }
-
     @Test
     public void testSubCommand() {
         executor.executeAll(consoleSender, "test sub");

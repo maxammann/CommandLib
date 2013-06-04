@@ -11,23 +11,34 @@ import java.util.Map;
 public class HelpCommand extends Command {
 
     private final CommandExecutor executor;
-    private final Map<Command, String> help;
+    private Map<Command, String> help;
 
     public HelpCommand(CommandExecutor executor, String name, String usage, String page, String identifiers, String format) {
         super(name, usage);
         this.executor = executor;
-
         addArgument(new Argument(page, true, true));
         setIdentifiers(identifiers);
+    }
 
-        final List<Command> commands = executor.getCommands();
-        HelpCommandBuilder builder = new HelpCommandBuilder(commands, format);
+    public void buildHelpCache(String format) {
+        HelpCommandBuilder builder = new HelpCommandBuilder(executor.getCommands(), format);
         builder.buildHelp();
         help = builder.getOutput();
     }
 
+    public String getHelp(Command command) {
+        if (help == null) {
+            throw new IllegalStateException("Help command cache is empty!");
+        }
+
+        return help.get(command);
+    }
+
     @Override
     public void execute(CommandSender sender, CallInformation information) {
+        if (help == null) {
+            throw new IllegalStateException("Help command cache is empty!");
+        }
         int size = countCommands(sender, executor.getCommands());
 
         final int page = information.getPage(size);
@@ -36,7 +47,6 @@ public class HelpCommand extends Command {
 
         sendHelp(sender, help, end - 1, start);
     }
-
 
     private int countCommands(CommandSender sender, List<Command> commands) {
         int count = 0;
@@ -51,7 +61,7 @@ public class HelpCommand extends Command {
         return count;
     }
 
-    public void sendHelp(CommandSender sender, Map<Command, String> commands, int endIndex, int startIndex) {
+    private void sendHelp(CommandSender sender, Map<Command, String> commands, int endIndex, int startIndex) {
         int current = 0;
 
         for (Map.Entry<Command, String> entry : commands.entrySet()) {

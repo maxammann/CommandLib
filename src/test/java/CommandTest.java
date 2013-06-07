@@ -144,14 +144,14 @@ public class CommandTest {
     @Test
     public void testSubCommand() {
         executor.executeAll(consoleSender, "test sub");
-        assertEquals(TEST_TEXT_SUB + '\n' + TEST_TEXT, outContent.toString().trim());
+        assertEquals(TEST_TEXT_SUB, outContent.toString().trim());
 
     }
 
     @Test
     public void testSubSubCommand() {
         executor.executeAll(consoleSender, "test sub subsub");
-        assertEquals(TEST_TEXT_SUB_SUB + '\n' + TEST_TEXT_SUB + '\n' + TEST_TEXT, outContent.toString().trim());
+        assertEquals(TEST_TEXT_SUB_SUB, outContent.toString().trim());
     }
 
     @After

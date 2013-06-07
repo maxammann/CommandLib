@@ -55,7 +55,7 @@ public abstract class CommandExecutor {
                 }
 
                 if (subResult == CallResult.SUCCESS && executeOnlySub) {
-                    continue;
+                    return CallResult.SUCCESS;
                 }
 
                 if (command.isInfinite() || argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {

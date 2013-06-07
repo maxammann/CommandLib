@@ -15,6 +15,7 @@ public abstract class CommandExecutor {
     private final List<Command> commands = new ArrayList<Command>(1);
 
     private int defaultElementsPerPage = 10;
+    private boolean executeOnlySub = true;
 
     public void executeAll(CommandSender sender, String command) {
 
@@ -53,6 +54,10 @@ public abstract class CommandExecutor {
                     subResult = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
                 }
 
+                if (subResult == CallResult.SUCCESS && executeOnlySub) {
+                    continue;
+                }
+
                 if (command.isInfinite() || argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
                     //TODO check if argument type is ok
                     if (subResult != CallResult.SUCCESS) {
@@ -74,12 +79,13 @@ public abstract class CommandExecutor {
                     onPreCommand(info);
                     command.execute(sender, info);
                     onPostCommand(info);
+                    result = CallResult.SUCCESS;
                 }  else {
                     onExecutionBlocked(sender, command);
+                    result = CallResult.BLOCKED;
                 }
 
                 command.executeCallMethods(sender, info);
-                result = CallResult.SUCCESS;
             }
         }
 
@@ -100,11 +106,16 @@ public abstract class CommandExecutor {
         return result;
     }
 
+    public void setExecuteOnlySubCommands(boolean executeOnlySub) {
+        this.executeOnlySub = executeOnlySub;
+    }
+
     private static enum CallResult {
         SUCCESS,
         NOT_FOUND,
         DISPLAYED_COMMAND_HELP,
-        NO_PERMISSION
+        NO_PERMISSION,
+        BLOCKED
     }
 
 

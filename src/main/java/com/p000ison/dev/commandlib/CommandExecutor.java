@@ -53,11 +53,6 @@ public abstract class CommandExecutor {
                     subResult = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
                 }
 
-                if (!command.allowExecution(sender)) {
-                    onExecutionBlocked(sender, command);
-                    continue;
-                }
-
                 if (command.isInfinite() || argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
                     //TODO check if argument type is ok
                     if (subResult != CallResult.SUCCESS) {
@@ -74,10 +69,16 @@ public abstract class CommandExecutor {
                 }
 
                 CallInformation info = createCallInformation(command, sender, identifier, arguments);
-                onPreCommand(info);
-                command.execute(sender, info);
+
+                if (command.allowExecution(sender)) {
+                    onPreCommand(info);
+                    command.execute(sender, info);
+                    onPostCommand(info);
+                }  else {
+                    onExecutionBlocked(sender, command);
+                }
+
                 command.executeCallMethods(sender, info);
-                onPostCommand(info);
                 result = CallResult.SUCCESS;
             }
         }

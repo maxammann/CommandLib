@@ -196,7 +196,7 @@ public class Command {
     }
 
     public final Command addAlias(Command alias) {
-        this.callMethods.add(alias);
+        alias.addCallMethod(this);
         return this;
     }
 
@@ -276,7 +276,7 @@ public class Command {
 
     void addAliases(Collection<Command> aliases) {
         for (Command command : aliases) {
-            command.addCallMethod(this);
+            addCallMethod(command);
         }
     }
 

@@ -80,12 +80,12 @@ public abstract class CommandExecutor {
                     command.execute(sender, info);
                     onPostCommand(info);
                     result = CallResult.SUCCESS;
-                }  else {
+                } else {
                     onExecutionBlocked(sender, command);
                     result = CallResult.BLOCKED;
                 }
 
-                command.executeCallMethods(sender, info);
+                executeCallMethods(info);
             }
         }
 
@@ -104,6 +104,14 @@ public abstract class CommandExecutor {
         }
 
         return result;
+    }
+
+    private void executeCallMethods(CallInformation info) {
+        for (Command command : info.getCommand().getCallMethods()) {
+            onPreCommand(info);
+            command.execute(info.getSender(), info);
+            onPostCommand(info);
+        }
     }
 
     public void setExecuteOnlySubCommands(boolean executeOnlySub) {

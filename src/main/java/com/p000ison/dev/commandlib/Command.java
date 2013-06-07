@@ -238,12 +238,6 @@ public class Command {
         return true;
     }
 
-    void executeCallMethods(CommandSender sender, CallInformation info) {
-        for (Command command : getCallMethods()) {
-            command.execute(sender, info);
-        }
-    }
-
     //================================================================================
     // Internal modify methods
     //================================================================================

@@ -74,18 +74,12 @@ public abstract class CommandExecutor {
                 }
 
                 CallInformation info = createCallInformation(command, sender, identifier, arguments);
-
                 if (command.allowExecution(sender)) {
-                    onPreCommand(info);
-                    command.execute(sender, info);
-                    onPostCommand(info);
-                    result = CallResult.SUCCESS;
+                    result = executeCommand(info);
                 } else {
                     onExecutionBlocked(sender, command);
                     result = CallResult.BLOCKED;
                 }
-
-                executeCallMethods(info);
             }
         }
 
@@ -106,7 +100,7 @@ public abstract class CommandExecutor {
         return result;
     }
 
-    private void executeCallMethods(CallInformation info) {
+    protected void executeCallMethods(CallInformation info) {
         for (Command command : info.getCommand().getCallMethods()) {
             onPreCommand(info);
             command.execute(info.getSender(), info);
@@ -114,11 +108,24 @@ public abstract class CommandExecutor {
         }
     }
 
+    protected CallResult executeCommand(CallInformation info) {
+        Command command = info.getCommand();
+        CommandSender sender = info.getSender();
+
+        onPreCommand(info);
+        command.execute(sender, info);
+        onPostCommand(info);
+        CallResult result = CallResult.SUCCESS;
+        executeCallMethods(info);
+
+        return result;
+    }
+
     public void setExecuteOnlySubCommands(boolean executeOnlySub) {
         this.executeOnlySub = executeOnlySub;
     }
 
-    private static enum CallResult {
+    static enum CallResult {
         SUCCESS,
         NOT_FOUND,
         DISPLAYED_COMMAND_HELP,

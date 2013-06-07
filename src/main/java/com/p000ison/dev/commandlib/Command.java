@@ -45,6 +45,7 @@ public class Command {
 
     private boolean needAllPermissions;
     private boolean infinite;
+    private boolean asynchronous;
 
     protected Command(final String name, final String usage) {
         this.name = name;
@@ -314,5 +315,13 @@ public class Command {
      */
     public void setInfinite(boolean infinite) {
         this.infinite = infinite;
+    }
+
+    public void setAsynchronous(boolean asynchronous) {
+        this.asynchronous = asynchronous;
+    }
+
+    public boolean isAsynchronous() {
+        return asynchronous;
     }
 }

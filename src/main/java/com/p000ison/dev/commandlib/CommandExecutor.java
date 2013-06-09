@@ -49,20 +49,20 @@ public abstract class CommandExecutor {
         for (Command command : currentCommands) {
             if (command.isIdentifier(identifier)) {
 
-                CallResult subResult = null;
+//                CallResult subResult = null;
                 if (argumentsNr > 0) {
-                    subResult = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
+                    result = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
                 }
 
-                if (subResult == CallResult.SUCCESS && executeOnlySub) {
+                if (result != CallResult.NOT_FOUND && executeOnlySub) {
                     return CallResult.SUCCESS;
                 }
 
-                if (command.isInfinite() || argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
+                if (!command.isInfinite() && (argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments())) {
                     //TODO check if argument type is ok
 
                     //Only if there is no sub command
-                    if (subResult == null) {
+                    if (result == CallResult.NOT_FOUND) {
                         helpCommands.add(command);
                         result = CallResult.DISPLAYED_COMMAND_HELP;
                         continue;

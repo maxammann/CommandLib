@@ -79,6 +79,9 @@ class HelpCommandBuilder {
     }
 
     private void appendIdentifier(StringBuilder builder, Command command) {
+        if (command.getIdentifiers() == null) {
+            throw new IllegalStateException("The identifiers of the command " + command.toString() + " are null!");
+        }
         builder.append(command.getIdentifiers().length > 0 ? command.getIdentifiers()[0] : "null").append(' ');
     }
 

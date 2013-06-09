@@ -60,7 +60,9 @@ public abstract class CommandExecutor {
 
                 if (command.isInfinite() || argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments()) {
                     //TODO check if argument type is ok
-                    if (subResult != CallResult.SUCCESS) {
+
+                    //Only if there is no sub command
+                    if (subResult == null) {
                         helpCommands.add(command);
                         result = CallResult.DISPLAYED_COMMAND_HELP;
                         continue;
@@ -79,6 +81,7 @@ public abstract class CommandExecutor {
                 } else {
                     onExecutionBlocked(sender, command);
                     result = CallResult.BLOCKED;
+                    executeCallMethods(info);
                 }
             }
         }

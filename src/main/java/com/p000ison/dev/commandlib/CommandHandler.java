@@ -14,7 +14,7 @@ public @interface CommandHandler {
 
     String name() default "";
 
-    String usage() default "";
+    String description() default "";
 
     String[] identifiers() default {};
 

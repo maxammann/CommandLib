@@ -42,20 +42,20 @@ public abstract class CommandExecutor {
     private CallResult executeAll(CommandSender sender, String identifier, String[] arguments, List<Command> currentCommands) {
         int argumentsNr = arguments.length;
 
-        CallResult result = CallResult.NOT_FOUND;
+        CallResult result = CallResult.NOT_FOUND ;
 
         List<Command> helpCommands = new LinkedList<Command>(), permCommands = new LinkedList<Command>();
 
         for (Command command : currentCommands) {
             if (command.isIdentifier(identifier)) {
 
-//                CallResult subResult = null;
                 if (argumentsNr > 0) {
                     result = executeAll(sender, arguments[0], removeUntil(arguments, 1), command.getSubCommands());
                 }
 
                 if (result != CallResult.NOT_FOUND && executeOnlySub) {
-                    return CallResult.SUCCESS;
+                    result = CallResult.SUCCESS;
+                    continue;
                 }
 
                 if (!command.isInfinite() && (argumentsNr < command.getMinArguments() || argumentsNr > command.getMaxArguments())) {
@@ -289,7 +289,7 @@ public abstract class CommandExecutor {
 
 
     private AnnotatedCommand createCommand(Method method, Object instance, CommandHandler annotation) {
-        return new AnnotatedCommand(annotation.name(), annotation.usage(),
+        return new AnnotatedCommand(annotation.name(), annotation.description(),
                 annotation.identifiers(),
                 createArguments(annotation.maxArguments(), annotation.minArguments(), annotation.arguments()),
                 method, instance);

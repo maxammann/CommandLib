@@ -11,9 +11,9 @@ import java.util.List;
 public class Command {
 
     /**
-     * The usage and the name of this command
+     * The description and the name of this command
      */
-    private String usage, name;
+    private String description, name;
 
     /**
      * A list of sub-commands, you can change this during runtime
@@ -47,9 +47,9 @@ public class Command {
     private boolean infinite;
     private boolean asynchronous;
 
-    protected Command(final String name, final String usage) {
+    protected Command(final String name, final String description) {
         this.name = name;
-        this.usage = usage;
+        this.description = description;
     }
 
     protected Command(final String name) {
@@ -60,12 +60,12 @@ public class Command {
      * Setups this command based on given information
      *
      * @param name        The name of the command
-     * @param usage       The usage of the command
+     * @param description       The description of the command
      * @param identifiers The identifiers of the command
      */
-    private void setup(final String name, final String usage, final String[] identifiers) {
+    private void setup(final String name, final String description, final String[] identifiers) {
         this.identifiers = identifiers;
-        this.usage = usage;
+        this.description = description;
         this.name = name;
     }
 
@@ -80,8 +80,8 @@ public class Command {
         return name;
     }
 
-    public final String getUsage() {
-        return usage;
+    public final String getDescription() {
+        return description;
     }
 
     public final String[] getIdentifiers() {
@@ -206,8 +206,8 @@ public class Command {
         return this;
     }
 
-    public final Command setUsage(String usage) {
-        this.usage = usage;
+    public final Command setDescription(String description) {
+        this.description = description;
         return this;
     }
 
@@ -246,8 +246,8 @@ public class Command {
     void check() {
         if (name == null) {
             throw new CommandException(this, "The command %s has no name!", this.getName());
-        } else if (usage == null) {
-            throw new CommandException(this, "The command %s has no usage!", this.getName());
+        } else if (description == null) {
+            throw new CommandException(this, "The command %s has no description!", this.getName());
         } else if (identifiers == null || identifiers.length == 0) {
             throw new CommandException(this, "The command %s has no identifiers!", this.getName());
         }

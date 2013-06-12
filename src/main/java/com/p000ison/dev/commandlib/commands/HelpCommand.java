@@ -13,8 +13,8 @@ public class HelpCommand extends Command {
     private final CommandExecutor executor;
     private Map<Command, String> help;
 
-    public HelpCommand(CommandExecutor executor, String name, String usage, String page, String identifiers, String format) {
-        super(name, usage);
+    public HelpCommand(CommandExecutor executor, String name, String description, String page, String identifiers) {
+        super(name, description);
         this.executor = executor;
         addArgument(new Argument(page, true, true));
         setIdentifiers(identifiers);

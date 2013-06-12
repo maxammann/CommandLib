@@ -72,7 +72,7 @@ public class CommandTest {
         Command subsubCommand = executor.build(this, "SubSubTest");
         executor.register(this, "Test").addSubCommand(subCommand);
         subCommand.addSubCommand(subsubCommand);
-        executor.register(new HelpCommand(executor, "Help", "helpme", "help", "help", "ids-args-usage"));
+        executor.register(new HelpCommand(executor, "Help", "helpme", "help", "help"));
     }
 
     public static void main(String[] args) {
@@ -116,7 +116,7 @@ public class CommandTest {
             public void execute(CommandSender sender, CallInformation information) {
                 information.reply("cmd2 " + information);
             }
-        }.setName("CMD2").setUsage("usage2").setIdentifiers("cmd")
+        }.setName("CMD2").setDescription("usage2").setIdentifiers("cmd")
                 .addArgument(new Argument("arg1", false)));
 
         executor.register(new Command() {
@@ -124,7 +124,7 @@ public class CommandTest {
             public void execute(CommandSender sender, CallInformation information) {
                 information.reply("cmd1 " + information);
             }
-        }.setName("CMD1").setUsage("usage1").setIdentifiers("cmd")
+        }.setName("CMD1").setDescription("usage1").setIdentifiers("cmd")
                 .addArgument(new Argument("arg1", false))
                 .addArgument(new Argument("page", false)));
 
@@ -159,17 +159,17 @@ public class CommandTest {
         outContent.reset();
     }
 
-    @CommandHandler(name = "Test", usage = "None", identifiers = {"test"}, arguments = "test", minArguments = 1, maxArguments = 1)
+    @CommandHandler(name = "Test", description = "None", identifiers = {"test"}, arguments = "test", minArguments = 1, maxArguments = 1)
     public void testCommand(CommandSender sender, CallInformation info) {
         info.reply(TEST_TEXT);
     }
 
-    @CommandHandler(name = "SubTest", usage = "None", identifiers = {"sub"}, minArguments = 0, maxArguments = 0)
+    @CommandHandler(name = "SubTest", description = "None", identifiers = {"sub"}, minArguments = 0, maxArguments = 0)
     public void testSubCommand(CommandSender sender, CallInformation info) {
         info.reply(TEST_TEXT_SUB);
     }
 
-    @CommandHandler(name = "SubSubTest", usage = "None", identifiers = {"subsub"}, minArguments = 0, maxArguments = 0)
+    @CommandHandler(name = "SubSubTest", description = "None", identifiers = {"subsub"}, minArguments = 0, maxArguments = 0)
     public void testSubSubCommand(CommandSender sender, CallInformation info) {
         info.reply(TEST_TEXT_SUB_SUB);
     }

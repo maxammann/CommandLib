@@ -17,7 +17,7 @@ class HelpCommandBuilder {
 
 
     /**
-     * -ids-args-usage
+     * -ids-args-description
      */
     private String format;
 
@@ -72,8 +72,8 @@ class HelpCommandBuilder {
         output = output.replace("-args", builder.toString());
         builder.setLength(0);
 
-        appendUsage(builder, lastCommand);
-        output = output.replace("-usage", builder.toString());
+        appendDescription(builder, lastCommand);
+        output = output.replace("-description", builder.toString());
 
         return output;
     }
@@ -85,8 +85,8 @@ class HelpCommandBuilder {
         builder.append(command.getIdentifiers().length > 0 ? command.getIdentifiers()[0] : "null").append(' ');
     }
 
-    private void appendUsage(StringBuilder builder, Command command) {
-        builder.append(command.getUsage()).append(' ');
+    private void appendDescription(StringBuilder builder, Command command) {
+        builder.append(command.getDescription()).append(' ');
     }
 
     private void appendArguments(StringBuilder builder, Command command) {
